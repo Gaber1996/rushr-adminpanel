@@ -4,6 +4,10 @@ import AdminLayout from './layouts/AdminLayout'
 import ProVerification from './pages/ProVerification'
 import VerificationDetails from './pages/VerificationDetails'
 import PlatformSettings from './pages/PlatformSettings'
+import DisputeResolution from './pages/DisputeResolution'
+import DisputeDetails from './pages/DisputeDetails'
+import { useDocumentTitle } from './hooks/useDocumentTitle'
+import { DisputesProvider } from './context/DisputesContext'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -12,7 +16,9 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  useDocumentTitle()
   return (
+    <DisputesProvider>
     <Routes>
       <Route path="/login" element={<SignIn />} />
       <Route
@@ -25,7 +31,8 @@ function App() {
         <Route path="/dashboard" element={<div className="font-montserrat text-2xl font-bold text-gray-400">Dashboard - Coming Soon</div>} />
         <Route path="/pro-verification" element={<ProVerification />} />
         <Route path="/pro-verification/:contractorId" element={<VerificationDetails />} />
-        <Route path="/dispute-resolution" element={<div className="font-montserrat text-2xl font-bold text-gray-400">Dispute Resolution - Coming Soon</div>} />
+        <Route path="/dispute-resolution" element={<DisputeResolution />} />
+        <Route path="/dispute-resolution/:id" element={<DisputeDetails />} />
         <Route path="/user-management" element={<div className="font-montserrat text-2xl font-bold text-gray-400">User Management - Coming Soon</div>} />
         <Route path="/platform-settings" element={<PlatformSettings />} />
         <Route path="/audit-log" element={<div className="font-montserrat text-2xl font-bold text-gray-400">Audit Log - Coming Soon</div>} />
@@ -33,6 +40,7 @@ function App() {
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </DisputesProvider>
   )
 }
 

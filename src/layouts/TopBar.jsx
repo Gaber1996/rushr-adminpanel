@@ -1,4 +1,4 @@
-import { Search, Bell, Menu } from 'lucide-react'
+import { Bell, Menu } from 'lucide-react'
 import logo from '../assets/logo.png'
 
 export default function TopBar() {
@@ -16,18 +16,7 @@ export default function TopBar() {
 
       <img src={logo} alt="Rushr" className="w-[80px] h-[80px] object-contain" />
 
-      {/* Search */}
-      <div
-        className="flex-1 flex items-center gap-2 rounded-xl border px-3"
-        style={{ borderColor: '#D9D9D9', height: '56px', backgroundColor: '#FEFEFE' }}
-      >
-        <Search className="w-6 h-6 text-[#6A6A6A]" />
-        <input
-          type="text"
-          placeholder="Search"
-          className="flex-1 outline-none bg-transparent font-montserrat text-sm text-[#0F0F0F] placeholder:text-[#6A6A6A]"
-        />
-      </div>
+      <div className="flex-1" />
 
       {/* Notification */}
       <div className="relative w-14 h-14 flex items-center justify-center rounded-full hover:bg-gray-50 cursor-pointer">
