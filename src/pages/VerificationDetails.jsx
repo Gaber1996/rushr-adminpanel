@@ -50,7 +50,32 @@ function formatDate(dateStr) {
 }
 
 function DocImage({ src, alt }) {
+  const [objectUrl, setObjectUrl] = useState(null)
   const [hasError, setHasError] = useState(false)
+
+  // /api/files rejects requests without the admin token, and an <img src> can't send one,
+  // so the file is downloaded with the token and shown from a local object URL.
+  useEffect(() => {
+    let cancelled = false
+    let url = null
+    fetch(src, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+      .then((res) => {
+        if (!res.ok) throw new Error(`File request failed (${res.status})`)
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        url = URL.createObjectURL(blob)
+        setObjectUrl(url)
+      })
+      .catch(() => {
+        if (!cancelled) setHasError(true)
+      })
+    return () => {
+      cancelled = true
+      if (url) URL.revokeObjectURL(url)
+    }
+  }, [src])
 
   return (
     <div className="flex-1 flex items-center justify-center rounded-xl bg-gray-100 overflow-hidden">
@@ -59,9 +84,11 @@ function DocImage({ src, alt }) {
           <FileText className="w-12 h-12" strokeWidth={1.5} />
           <span className="font-montserrat text-sm">Unable to load document</span>
         </div>
+      ) : !objectUrl ? (
+        <Loader2 className="w-8 h-8 animate-spin text-[#0067DE]" />
       ) : (
         <img
-          src={src}
+          src={objectUrl}
           alt={alt}
           className="w-full h-full object-contain"
           onError={() => setHasError(true)}
