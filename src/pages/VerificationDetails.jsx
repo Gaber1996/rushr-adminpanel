@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { FileText, Loader2, CheckCircle2, XCircle, Clock, ArrowLeft, X } from 'lucide-react'
-import { apiRequest, BASE_URL } from '../config/api'
+import { apiRequest } from '../config/api'
+import { loadDocumentFile } from '../utils/documentFile'
 
 const DOC_TYPE_LABELS = {
   GOVERNMENT_ID: 'Government ID',
@@ -49,33 +50,27 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function DocImage({ src, alt }) {
-  const [objectUrl, setObjectUrl] = useState(null)
+function DocImage({ fileUrl, mimeType, alt }) {
+  const [file, setFile] = useState(null) // { url, isPdf } from loadDocumentFile
   const [hasError, setHasError] = useState(false)
 
-  // /api/files rejects requests without the admin token, and an <img src> can't send one,
-  // so the file is downloaded with the token and shown from a local object URL.
   useEffect(() => {
-    let cancelled = false
-    let url = null
-    fetch(src, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
-      .then((res) => {
-        if (!res.ok) throw new Error(`File request failed (${res.status})`)
-        return res.blob()
-      })
-      .then((blob) => {
-        if (cancelled) return
-        url = URL.createObjectURL(blob)
-        setObjectUrl(url)
+    const controller = new AbortController()
+    let loaded = null
+    loadDocumentFile(fileUrl, mimeType, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return URL.revokeObjectURL(result.url)
+        loaded = result
+        setFile(result)
       })
       .catch(() => {
-        if (!cancelled) setHasError(true)
+        if (!controller.signal.aborted) setHasError(true)
       })
     return () => {
-      cancelled = true
-      if (url) URL.revokeObjectURL(url)
+      controller.abort()
+      if (loaded) URL.revokeObjectURL(loaded.url)
     }
-  }, [src])
+  }, [fileUrl, mimeType])
 
   return (
     <div className="flex-1 flex items-center justify-center rounded-xl bg-gray-100 overflow-hidden">
@@ -84,11 +79,19 @@ function DocImage({ src, alt }) {
           <FileText className="w-12 h-12" strokeWidth={1.5} />
           <span className="font-montserrat text-sm">Unable to load document</span>
         </div>
-      ) : !objectUrl ? (
+      ) : !file ? (
         <Loader2 className="w-8 h-8 animate-spin text-[#0067DE]" />
+      ) : file.isPdf ? (
+        // An <img> can't display a PDF, so it opens in the browser's PDF viewer.
+        // #view=FitH fits the page to the panel's width.
+        <iframe
+          src={`${file.url}#view=FitH`}
+          title={alt}
+          className="w-full self-stretch min-h-[400px] border-0"
+        />
       ) : (
         <img
-          src={objectUrl}
+          src={file.url}
           alt={alt}
           className="w-full h-full object-contain"
           onError={() => setHasError(true)}
@@ -406,7 +409,8 @@ export default function VerificationDetails() {
             {selectedDoc ? (
               <DocImage
                 key={selectedDoc.documentId}
-                src={`${BASE_URL}/api/files/${selectedDoc.fileUrl.replace('uploads/', '')}`}
+                fileUrl={selectedDoc.fileUrl}
+                mimeType={selectedDoc.mimeType}
                 alt={DOC_TYPE_LABELS[selectedDoc.documentType] || 'Document'}
               />
             ) : (
