@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { clearSession } from '../lib/session'
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -23,8 +24,7 @@ export default function Sidebar() {
   const location = useLocation()
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    clearSession()
     navigate('/login')
   }
 

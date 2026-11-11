@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, SlidersHorizontal, Eye, ChevronDown, Loader2 } from 'lucide-react'
-import { apiRequest } from '../config/api'
+import { useApiResource } from '../hooks/useApiResource'
 
 const STATUS_STYLES = {
   APPROVED: {
@@ -71,33 +71,13 @@ function formatDate(dateStr) {
 
 export default function ProVerification() {
   const navigate = useNavigate()
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const { data, loading, error } = useApiResource('/api/admin/verification-queue', {
+    errorMessage: 'Failed to load verification data.',
+    networkErrorMessage: 'Unable to connect to server.',
+  })
 
-  useEffect(() => {
-    fetchVerificationQueue()
-  }, [])
-
-  async function fetchVerificationQueue() {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await apiRequest('/api/admin/verification-queue')
-      if (res.success) {
-        setData(res.data)
-      } else {
-        setError(res.message || 'Failed to load verification data.')
-      }
-    } catch (err) {
-      setError('Unable to connect to server.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const filtered = data.filter((item) => {
+  const filtered = (data ?? []).filter((item) => {
     const name = `${item.firstName} ${item.lastName}`.toLowerCase()
     return name.includes(search.toLowerCase())
   })

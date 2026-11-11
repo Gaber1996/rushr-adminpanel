@@ -1,9 +1,14 @@
 import { Bell, Menu } from 'lucide-react'
 import logo from '../assets/logo.png'
+import { getUser } from '../lib/session'
+
+/** Initials for the avatar; falls back to the original "AK" placeholder. */
+export function getInitials({ firstName, lastName }) {
+  return `${(firstName || 'A')[0]}${(lastName || 'K')[0]}`.toUpperCase()
+}
 
 export default function TopBar() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  const initials = `${(user.firstName || 'A')[0]}${(user.lastName || 'K')[0]}`.toUpperCase()
+  const initials = getInitials(getUser())
 
   return (
     <header

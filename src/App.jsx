@@ -8,10 +8,14 @@ import DisputeResolution from './pages/DisputeResolution'
 import DisputeDetails from './pages/DisputeDetails'
 import AuditLog from './pages/AuditLog'
 import { useDocumentTitle } from './hooks/useDocumentTitle'
+import { clearSession, isLoggedIn } from './lib/session'
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token')
-  if (!token) return <Navigate to="/login" replace />
+  if (!isLoggedIn()) {
+    // Drop an expired token so it is not sent with the next sign-in.
+    clearSession()
+    return <Navigate to="/login" replace />
+  }
   return children
 }
 

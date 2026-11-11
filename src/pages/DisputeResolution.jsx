@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Eye, Clock, Check, ChevronDown, Loader2 } from 'lucide-react'
 import emptyFolder from '../assets/empty-folder.png'
-import { apiRequest } from '../config/api'
+import { useApiResource } from '../hooks/useApiResource'
+import { useDebouncedValue } from '../hooks/useDebouncedValue'
 
 const PER_PAGE_OPTIONS = [10, 20, 50]
 
@@ -48,61 +49,32 @@ function StatusBadge({ status }) {
 export default function DisputeResolution() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
   const [perPageOpen, setPerPageOpen] = useState(false)
 
-  const [rows, setRows] = useState([])
-  const [totalPages, setTotalPages] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
-
-  // The server owns both the paging and the search, so a new term starts again at page 1.
-  // Debounced so a request goes out per pause, not per keystroke.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search.trim())
-      setPage(1)
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [search])
+  // Debounced so a request goes out per pause, not per keystroke. The server owns both the
+  // paging and the search, so a new term starts again at page 1.
+  const debouncedSearch = useDebouncedValue(search.trim())
+  const [lastSearch, setLastSearch] = useState(debouncedSearch)
+  if (lastSearch !== debouncedSearch) {
+    setLastSearch(debouncedSearch)
+    setPage(1)
+  }
 
   // One page of disputes at a time — Next/Prev and the per-page dropdown each refetch
   // rather than re-slicing a local list.
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
+  const params = new URLSearchParams({
+    page: String(page - 1), // the API is zero-based
+    size: String(perPage),
+  })
+  if (debouncedSearch) params.set('search', debouncedSearch)
 
-    const params = new URLSearchParams({
-      page: String(page - 1), // the API is zero-based
-      size: String(perPage),
-    })
-    if (debouncedSearch) params.set('search', debouncedSearch)
-
-    apiRequest(`/api/admin/disputes/paged?${params.toString()}`)
-      .then((res) => {
-        if (cancelled) return
-        if (!res?.success) throw new Error(res?.message || 'Could not load disputes.')
-        setRows(res.data?.content ?? [])
-        setTotalPages(Math.max(1, res.data?.totalPages ?? 1))
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setRows([])
-        setTotalPages(1)
-        setError(err.message || 'Could not load disputes.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [debouncedSearch, page, perPage, reloadKey])
+  const { data, loading, error, reload } = useApiResource(`/api/admin/disputes/paged?${params}`, {
+    errorMessage: 'Could not load disputes.',
+  })
+  const rows = data?.content ?? []
+  const totalPages = Math.max(1, data?.totalPages ?? 1)
 
   const currentPage = Math.min(page, totalPages)
   const pageRows = rows
@@ -349,7 +321,7 @@ export default function DisputeResolution() {
                     <p className="font-montserrat text-sm text-[#C20A0A]">{error}</p>
                     <button
                       type="button"
-                      onClick={() => setReloadKey((k) => k + 1)}
+                      onClick={reload}
                       className="rounded-lg px-4 py-2 font-montserrat font-semibold transition-colors hover:bg-[#ECF5FF]"
                       style={{ border: '1px solid #0067DE', color: '#0052B0', fontSize: '14px' }}
                     >

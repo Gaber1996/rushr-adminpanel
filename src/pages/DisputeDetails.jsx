@@ -14,6 +14,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { apiRequest, BASE_URL } from '../config/api'
+import { useApiResource } from '../hooks/useApiResource'
 
 // `total` is what the customer paid; `proNet` is what the pro would actually receive once the
 // platform's cut is taken — 12%, or 7% for a Pro+ pro — so the copy states the real figures.
@@ -395,10 +396,14 @@ export default function DisputeDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [dispute, setDispute] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
+  const {
+    data: dispute,
+    loading,
+    error,
+    reload,
+  } = useApiResource(`/api/admin/disputes/${id}`, {
+    errorMessage: 'Could not load this dispute.',
+  })
 
   const [selectedAction, setSelectedAction] = useState(null)
   const [adminNote, setAdminNote] = useState('')
@@ -408,38 +413,15 @@ export default function DisputeDetails() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
+  // A resolved case replays the decision the admin already made.
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    setError(null)
-
-    apiRequest(`/api/admin/disputes/${id}`)
-      .then((res) => {
-        if (cancelled) return
-        if (!res?.success) throw new Error(res?.message || 'Could not load this dispute.')
-        const data = res.data
-        setDispute(data)
-
-        // A resolved case replays the decision the admin already made.
-        const resolution = data?.resolution
-        setSelectedAction(resolution ? (ACTION_BY_OUTCOME[resolution.outcome] ?? null) : null)
-        setAdminNote(resolution?.reason ?? '')
-        setConsumerRefund(centsToMoney(resolution?.refundAmountCents))
-        setProRefund(centsToMoney(resolution?.proAmountCents))
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setDispute(null)
-        setError(err.message || 'Could not load this dispute.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [id, reloadKey])
+    if (!dispute) return
+    const resolution = dispute.resolution
+    setSelectedAction(resolution ? (ACTION_BY_OUTCOME[resolution.outcome] ?? null) : null)
+    setAdminNote(resolution?.reason ?? '')
+    setConsumerRefund(centsToMoney(resolution?.refundAmountCents))
+    setProRefund(centsToMoney(resolution?.proAmountCents))
+  }, [dispute])
 
   if (loading) {
     return (
@@ -460,7 +442,7 @@ export default function DisputeDetails() {
         <p className="font-montserrat text-[#C20A0A]">{error || 'Dispute not found.'}</p>
         <button
           type="button"
-          onClick={() => setReloadKey((k) => k + 1)}
+          onClick={reload}
           className="rounded-lg px-4 py-2 font-montserrat font-semibold transition-colors hover:bg-[#ECF5FF]"
           style={{ border: '1px solid #0067DE', color: '#0052B0', fontSize: '14px' }}
         >

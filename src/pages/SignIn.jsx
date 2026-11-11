@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, EyeOff, Eye, Loader2 } from 'lucide-react'
 import { apiRequest } from '../config/api'
+import { saveSession } from '../lib/session'
 import logo from '../assets/logo.png'
 import bgImage from '../assets/signin-bg.png'
 
@@ -25,15 +26,14 @@ export default function SignIn() {
       })
 
       if (res.success && res.data?.role === 'ADMIN') {
-        localStorage.setItem('token', res.data.token)
-        localStorage.setItem('user', JSON.stringify(res.data))
+        saveSession(res.data)
         navigate('/home')
       } else if (res.success && res.data?.role !== 'ADMIN') {
         setError('Access denied. Admin privileges required.')
       } else {
         setError(res.message || 'Login failed. Please check your credentials.')
       }
-    } catch (err) {
+    } catch {
       setError('Unable to connect to server. Please try again later.')
     } finally {
       setLoading(false)

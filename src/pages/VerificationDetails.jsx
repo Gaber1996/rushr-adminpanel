@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { FileText, Loader2, CheckCircle2, XCircle, Clock, ArrowLeft, X } from 'lucide-react'
 import { apiRequest } from '../config/api'
+import { useApiResource } from '../hooks/useApiResource'
 import { loadDocumentFile } from '../utils/documentFile'
 
 const DOC_TYPE_LABELS = {
@@ -254,33 +255,19 @@ function ApproveRejectButtons({ selectedDoc, actionLoading, onApprove, onReject 
 export default function VerificationDetails() {
   const { contractorId } = useParams()
   const navigate = useNavigate()
-  const [documents, setDocuments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const {
+    data,
+    loading,
+    error,
+    reload: reloadDocuments,
+  } = useApiResource(`/api/admin/contractors/${contractorId}/documents`, {
+    errorMessage: 'Failed to load documents.',
+    networkErrorMessage: 'Unable to connect to server.',
+  })
+  const documents = data ?? []
   const [selectedDoc, setSelectedDoc] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [modal, setModal] = useState({ open: false, action: null })
-
-  useEffect(() => {
-    fetchDocuments()
-  }, [contractorId])
-
-  async function fetchDocuments() {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await apiRequest(`/api/admin/contractors/${contractorId}/documents`)
-      if (res.success) {
-        setDocuments(res.data)
-      } else {
-        setError(res.message || 'Failed to load documents.')
-      }
-    } catch (err) {
-      setError('Unable to connect to server.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const contractor =
     documents.length > 0
@@ -316,11 +303,11 @@ export default function VerificationDetails() {
       if (res.success) {
         setModal({ open: false, action: null })
         setSelectedDoc(null)
-        await fetchDocuments()
+        reloadDocuments()
       } else {
         alert(res.message || `Failed to ${modal.action} document.`)
       }
-    } catch (err) {
+    } catch {
       alert('Unable to connect to server.')
     } finally {
       setActionLoading(false)

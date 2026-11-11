@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Search, SlidersHorizontal, Plus, Trash2, ChevronDown, Loader2, Upload } from 'lucide-react'
 import { apiRequest } from '../config/api'
+import { useApiResource } from '../hooks/useApiResource'
 
 function EditIcon({ className = '' }) {
   return (
@@ -302,9 +303,15 @@ function DeleteModal({ isOpen, onClose, onConfirm, loading, categoryName }) {
 
 // ─── Main Page ───────────────────────────────────────────────────────
 export default function PlatformSettings() {
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const {
+    data: categories,
+    loading,
+    error,
+    reload: reloadCategories,
+  } = useApiResource('/api/admin/categories', {
+    errorMessage: 'Failed to load categories.',
+    networkErrorMessage: 'Unable to connect to server.',
+  })
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('categories')
 
@@ -314,27 +321,6 @@ export default function PlatformSettings() {
   const [deleteModal, setDeleteModal] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
 
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  async function fetchCategories() {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await apiRequest('/api/admin/categories')
-      if (res.success) {
-        setCategories(res.data)
-      } else {
-        setError(res.message || 'Failed to load categories.')
-      }
-    } catch (err) {
-      setError('Unable to connect to server.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   async function handleAddCategory(payload, addAnother) {
     setActionLoading(true)
     try {
@@ -343,12 +329,12 @@ export default function PlatformSettings() {
         body: JSON.stringify(payload),
       })
       if (res.success) {
-        await fetchCategories()
+        reloadCategories()
         if (!addAnother) setAddModal(false)
       } else {
         alert(res.message || 'Failed to add category.')
       }
-    } catch (err) {
+    } catch {
       alert('Unable to connect to server.')
     } finally {
       setActionLoading(false)
@@ -364,12 +350,12 @@ export default function PlatformSettings() {
         body: JSON.stringify(payload),
       })
       if (res.success) {
-        await fetchCategories()
+        reloadCategories()
         setEditModal(null)
       } else {
         alert(res.message || 'Failed to update category.')
       }
-    } catch (err) {
+    } catch {
       alert('Unable to connect to server.')
     } finally {
       setActionLoading(false)
@@ -384,19 +370,19 @@ export default function PlatformSettings() {
         method: 'DELETE',
       })
       if (res.success) {
-        await fetchCategories()
+        reloadCategories()
         setDeleteModal(null)
       } else {
         alert(res.message || 'Failed to delete category.')
       }
-    } catch (err) {
+    } catch {
       alert('Unable to connect to server.')
     } finally {
       setActionLoading(false)
     }
   }
 
-  const filtered = categories.filter(
+  const filtered = (categories ?? []).filter(
     (cat) => cat.active && cat.name.toLowerCase().includes(search.toLowerCase())
   )
 
