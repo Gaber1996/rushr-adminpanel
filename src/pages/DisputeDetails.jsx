@@ -19,6 +19,10 @@ import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
+import Skeleton from '../components/ui/Skeleton'
+import DisputeDetailsSkeleton, {
+  DisputeStatusSkeleton,
+} from '../features/disputes/DisputeDetailsSkeleton'
 import PageHeader from '../components/ui/PageHeader'
 import DisputeStatusBadge, { isResolvedStatus } from '../features/disputes/DisputeStatusBadge'
 import { formatDateTime, formatTime, parseDate } from '../utils/format'
@@ -353,14 +357,25 @@ export default function DisputeDetails() {
     setProRefund(centsToMoney(resolution?.proAmountCents))
   }, [dispute])
 
-  if (loading) {
+  // Title and back arrow; the case line and status badge fill in once the case arrives.
+  const header = (subtitle, status) => (
+    <PageHeader
+      title={TEXT.title}
+      titleTone="ink"
+      onBack={() => navigate(ROUTES.disputeResolution)}
+      textGapClassName="gap-3"
+      subtitleClassName="text-base font-semibold leading-4 text-muted"
+      subtitle={subtitle}
+      actions={status}
+    />
+  )
+
+  // First load only — a reload keeps the case on screen.
+  if (loading && !dispute) {
     return (
-      <div className="flex flex-col gap-4">
-        <BackLink onClick={() => navigate(ROUTES.disputeResolution)} />
-        <div className="flex items-center gap-2 text-muted">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          {TEXT.loading}
-        </div>
+      <div className="flex flex-col gap-8">
+        {header(<Skeleton className="h-4 w-64" />, <DisputeStatusSkeleton />)}
+        <DisputeDetailsSkeleton />
       </div>
     )
   }
@@ -501,15 +516,10 @@ export default function DisputeDetails() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header row */}
-      <PageHeader
-        title={TEXT.title}
-        titleTone="ink"
-        onBack={() => navigate(ROUTES.disputeResolution)}
-        textGapClassName="gap-3"
-        subtitleClassName="text-base font-semibold leading-4 text-muted"
-        subtitle={TEXT.caseSubtitle(dispute.caseId, formatDateTime(dispute.createdAt))}
-        actions={<DisputeStatusBadge status={dispute.status} />}
-      />
+      {header(
+        TEXT.caseSubtitle(dispute.caseId, formatDateTime(dispute.createdAt)),
+        <DisputeStatusBadge status={dispute.status} />
+      )}
 
       {/* Main grid: left content + right resolution actions */}
       <div className="flex flex-col items-start gap-6 wide:flex-row">

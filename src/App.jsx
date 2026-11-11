@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Fragment } from 'react'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import SignIn from './pages/SignIn'
 import AdminLayout from './layouts/AdminLayout'
 import ProVerification from './pages/ProVerification'
@@ -19,6 +20,12 @@ function ProtectedRoute({ children }) {
     return <Navigate to={ROUTES.login} replace />
   }
   return children
+}
+
+/** Remounts the page when the route param changes, so no state carries over to the next record. */
+function KeyedByParam({ param, children }) {
+  const params = useParams()
+  return <Fragment key={params[param]}>{children}</Fragment>
 }
 
 function App() {
@@ -42,9 +49,23 @@ function App() {
           }
         />
         <Route path={ROUTES.proVerification} element={<ProVerification />} />
-        <Route path={ROUTES.verificationDetails} element={<VerificationDetails />} />
+        <Route
+          path={ROUTES.verificationDetails}
+          element={
+            <KeyedByParam param="contractorId">
+              <VerificationDetails />
+            </KeyedByParam>
+          }
+        />
         <Route path={ROUTES.disputeResolution} element={<DisputeResolution />} />
-        <Route path={ROUTES.disputeDetails} element={<DisputeDetails />} />
+        <Route
+          path={ROUTES.disputeDetails}
+          element={
+            <KeyedByParam param="id">
+              <DisputeDetails />
+            </KeyedByParam>
+          }
+        />
         <Route
           path={ROUTES.userManagement}
           element={

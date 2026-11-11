@@ -35,6 +35,8 @@ export const VERIFICATION_TEXT = {
     title: 'Verification Details',
     subtitle: 'Review pro information and documents',
     loadError: 'Failed to load documents.',
+    // Screen readers only, while the page skeleton shows.
+    loading: 'Loading documents…',
 
     // Pro Information card
     proInfoTitle: 'Pro Information',

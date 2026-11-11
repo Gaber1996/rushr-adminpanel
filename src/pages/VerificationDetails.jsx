@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, X } from 'lucide-react'
+import { FileText, CheckCircle2, XCircle, ArrowLeft, X } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
 import { ROUTES } from '../config/routes'
@@ -12,6 +12,8 @@ import Modal from '../components/ui/Modal'
 import PageHeader from '../components/ui/PageHeader'
 import TextField from '../components/ui/TextField'
 import VerificationStatusBadge from '../features/verification/VerificationStatusBadge'
+import VerificationDetailsSkeleton from '../features/verification/VerificationDetailsSkeleton'
+import Skeleton from '../components/ui/Skeleton'
 import { loadDocumentFile } from '../utils/documentFile'
 import { COMMON_TEXT, VERIFICATION_TEXT } from '../texts'
 
@@ -60,7 +62,7 @@ function DocImage({ fileUrl, mimeType, alt }) {
           <span className="text-sm">{TEXT.documentLoadError}</span>
         </div>
       ) : !file ? (
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Skeleton className="h-full min-h-[300px] w-full self-stretch" rounded="rounded-xl" />
       ) : file.isPdf ? (
         // An <img> can't display a PDF, so it opens in the browser's PDF viewer.
         // #view=FitH fits the page to the panel's width.
@@ -273,10 +275,26 @@ export default function VerificationDetails() {
     }
   }
 
-  if (loading) {
+  // Back link, title and subtitle — shown while loading too.
+  const header = (
+    <div>
+      <button
+        type="button"
+        onClick={() => navigate(ROUTES.proVerification)}
+        className="mb-4 flex items-center gap-2 text-sm text-muted transition-colors hover:text-primary"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        {TEXT.backToQueue}
+      </button>
+      <PageHeader title={TEXT.title} subtitle={TEXT.subtitle} />
+    </div>
+  )
+
+  if (loading && !data) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col gap-8">
+        {header}
+        <VerificationDetailsSkeleton />
       </div>
     )
   }
@@ -287,18 +305,7 @@ export default function VerificationDetails() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div>
-        <button
-          type="button"
-          onClick={() => navigate(ROUTES.proVerification)}
-          className="mb-4 flex items-center gap-2 text-sm text-muted transition-colors hover:text-primary"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {TEXT.backToQueue}
-        </button>
-        <PageHeader title={TEXT.title} subtitle={TEXT.subtitle} />
-      </div>
+      {header}
 
       {/* Content: Left (Info + Docs) + Right (Document Viewer) */}
       <div className="flex flex-col gap-8 lg:flex-row">
