@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
+import { COMMON_TEXT } from '../../texts'
 
 const TITLE_TONES = { heading: 'text-heading', ink: 'text-ink' }
 
@@ -24,7 +25,7 @@ export default function PageHeader({
             <button
               type="button"
               onClick={onBack}
-              aria-label="Back"
+              aria-label={COMMON_TEXT.back}
               className="text-muted transition-colors hover:text-primary"
             >
               <ArrowLeft className="h-7 w-7" />

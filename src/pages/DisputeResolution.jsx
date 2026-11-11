@@ -9,6 +9,9 @@ import { ENDPOINTS } from '../config/endpoints'
 import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
 import DisputeStatusBadge from '../features/disputes/DisputeStatusBadge'
+import { COMMON_TEXT, DISPUTES_TEXT } from '../texts'
+
+const TEXT = DISPUTES_TEXT.list
 
 const PER_PAGE_OPTIONS = [10, 20, 50]
 
@@ -32,7 +35,7 @@ export default function DisputeResolution() {
   // rather than re-slicing a local list.
   const { data, loading, error, reload } = useApiResource(
     ENDPOINTS.disputesPage({ page, size: perPage, search: debouncedSearch }),
-    { errorMessage: 'Could not load disputes.' }
+    { errorMessage: TEXT.loadError }
   )
   const rows = data?.content ?? []
   const totalPages = Math.max(1, data?.totalPages ?? 1)
@@ -59,11 +62,11 @@ export default function DisputeResolution() {
   if (!loading && !error && rows.length === 0 && !debouncedSearch) {
     return (
       <div className="flex h-full flex-col">
-        <PageHeader title="Dispute Resolution" titleTone="ink" />
+        <PageHeader title={TEXT.title} titleTone="ink" />
         <div className="flex flex-1 flex-col items-center justify-center gap-2">
           <img
             src={emptyFolder}
-            alt="No disputes"
+            alt={TEXT.emptyAlt}
             className="object-contain"
             style={{ width: '390px', height: '390px' }}
           />
@@ -71,7 +74,9 @@ export default function DisputeResolution() {
             className="text-center font-semibold text-ink"
             style={{ fontSize: '24px', lineHeight: '24px' }}
           >
-            There is no <span className="font-semibold">Dispute Resolution</span> yet.
+            {TEXT.emptyBefore}
+            <span className="font-semibold">{TEXT.emptyHighlight}</span>
+            {TEXT.emptyAfter}
           </p>
         </div>
       </div>
@@ -80,12 +85,12 @@ export default function DisputeResolution() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title="Dispute Resolution" titleTone="ink" />
+      <PageHeader title={TEXT.title} titleTone="ink" />
 
       <SearchInput
         value={search}
         onChange={setSearch}
-        placeholder="Search by dispute ID, customer or pro name"
+        placeholder={TEXT.searchPlaceholder}
         appearance="elevated"
       />
 
@@ -107,13 +112,13 @@ export default function DisputeResolution() {
           <thead>
             <tr>
               {[
-                'Dispute ID',
-                'Customer Name',
-                'Pro Name',
-                'Service',
-                'Reason',
-                'Status',
-                'Action',
+                TEXT.columns.disputeId,
+                TEXT.columns.customerName,
+                TEXT.columns.proName,
+                TEXT.columns.service,
+                COMMON_TEXT.reason,
+                TEXT.columns.status,
+                COMMON_TEXT.action,
               ].map((label) => (
                 <th
                   key={label}
@@ -173,7 +178,7 @@ export default function DisputeResolution() {
                       }}
                     >
                       {/* Null when a dispute was raised before any pro was assigned. */}
-                      {d.contractorName || '—'}
+                      {d.contractorName || COMMON_TEXT.emptyValue}
                     </td>
                     <td
                       className="text-center font-semibold text-ink"
@@ -185,7 +190,7 @@ export default function DisputeResolution() {
                         padding: '0 16px',
                       }}
                     >
-                      {d.categoryName || '—'}
+                      {d.categoryName || COMMON_TEXT.emptyValue}
                     </td>
                     <td
                       className="font-semibold text-ink"
@@ -228,7 +233,7 @@ export default function DisputeResolution() {
                         style={{ fontSize: '14px' }}
                       >
                         <Eye className="h-6 w-6" />
-                        Review
+                        {COMMON_TEXT.review}
                       </button>
                     </td>
                   </tr>
@@ -243,7 +248,7 @@ export default function DisputeResolution() {
                 >
                   <div className="flex items-center justify-center gap-2 text-sm text-muted">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Loading disputes…
+                    {TEXT.loading}
                   </div>
                 </td>
               </tr>
@@ -263,7 +268,7 @@ export default function DisputeResolution() {
                       className="rounded-lg px-4 py-2 font-semibold transition-colors hover:bg-primary-soft"
                       style={{ border: '1px solid #0067DE', color: '#0052B0', fontSize: '14px' }}
                     >
-                      Try again
+                      {COMMON_TEXT.tryAgain}
                     </button>
                   </div>
                 </td>
@@ -276,7 +281,7 @@ export default function DisputeResolution() {
                   className="px-4 py-10 text-center text-sm text-muted"
                   style={{ borderBottom: '1px solid #D9D9D9' }}
                 >
-                  No results found.
+                  {COMMON_TEXT.noResults}
                 </td>
               </tr>
             )}
@@ -306,7 +311,7 @@ export default function DisputeResolution() {
               }}
             >
               <span className="font-semibold text-muted" style={{ fontSize: '14px' }}>
-                Per page
+                {COMMON_TEXT.perPage}
               </span>
             </div>
             <button
@@ -366,12 +371,12 @@ export default function DisputeResolution() {
               boxShadow: '0px 0.5px 1px 0px rgba(0,0,0,0.05)',
             }}
           >
-            Prev
+            {COMMON_TEXT.prev}
           </button>
 
           {/* Page indicator */}
           <span className="font-medium text-muted" style={{ fontSize: '14px' }}>
-            Page {currentPage} of {totalPages}
+            {COMMON_TEXT.pageOf(currentPage, totalPages)}
           </span>
 
           {/* Next */}
@@ -390,7 +395,7 @@ export default function DisputeResolution() {
               boxShadow: '0px 0.5px 1px 0px rgba(0,0,0,0.05)',
             }}
           >
-            Next
+            {COMMON_TEXT.next}
           </button>
         </div>
       </div>

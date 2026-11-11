@@ -1,8 +1,10 @@
 import Modal from '../../components/ui/Modal'
 import Button from '../../components/ui/Button'
 import { CATEGORY_DIALOG_CLASS } from './CategoryDialog'
+import { CATEGORIES_TEXT, COMMON_TEXT } from '../../texts'
 
 const TITLE_ID = 'delete-category-title'
+const TEXT = CATEGORIES_TEXT.deleteDialog
 
 /** The trash illustration from Figma. */
 function TrashIllustration() {
@@ -49,16 +51,16 @@ export default function DeleteCategoryDialog({ open, onClose, onConfirm, loading
             id={TITLE_ID}
             className="text-center text-2xl font-extrabold leading-none text-ink md:text-[40px]"
           >
-            Delete This Category ?
+            {TEXT.title}
           </h3>
           <p className="text-center text-base font-semibold leading-tight text-muted md:text-2xl md:leading-6">
-            Are you sure you want to delete this category? This action cannot be undone.
+            {TEXT.message}
           </p>
         </div>
 
         <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:gap-6">
           <Button variant="outline" size="lg" className="flex-1" onClick={onClose}>
-            Cancel
+            {COMMON_TEXT.cancel}
           </Button>
           <Button
             variant="danger"
@@ -67,7 +69,7 @@ export default function DeleteCategoryDialog({ open, onClose, onConfirm, loading
             loading={loading}
             onClick={onConfirm}
           >
-            Delete Category
+            {TEXT.confirm}
           </Button>
         </div>
       </div>

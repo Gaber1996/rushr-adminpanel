@@ -10,13 +10,17 @@ import ErrorState from '../components/ui/ErrorState'
 import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
 import VerificationStatusBadge from '../features/verification/VerificationStatusBadge'
+import { COMMON_TEXT, VERIFICATION_TEXT } from '../texts'
+
+const TEXT = VERIFICATION_TEXT.queue
+const DOC_TYPES = VERIFICATION_TEXT.docTypes
 
 export default function ProVerification() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const { data, loading, error } = useApiResource(ENDPOINTS.verificationQueue, {
-    errorMessage: 'Failed to load verification data.',
-    networkErrorMessage: 'Unable to connect to server.',
+    errorMessage: TEXT.loadError,
+    networkErrorMessage: COMMON_TEXT.networkError,
   })
 
   const filtered = (data ?? []).filter((item) => {
@@ -28,9 +32,9 @@ export default function ProVerification() {
     <div className="flex flex-col gap-10">
       {/* Export Report and Filter are not wired to the API yet — later. */}
       <PageHeader
-        title="Pro Verification"
-        subtitle="Review and approve pro verification documents."
-        actions={<Button size="lg">Export Report</Button>}
+        title={TEXT.title}
+        subtitle={TEXT.subtitle}
+        actions={<Button size="lg">{TEXT.exportReport}</Button>}
       />
 
       {/* Search & Filter */}
@@ -38,7 +42,7 @@ export default function ProVerification() {
         <SearchInput value={search} onChange={setSearch} className="flex-1" />
         <Button variant="outlinePrimary" size="field">
           <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
-          Filter
+          {COMMON_TEXT.filter}
         </Button>
       </div>
 
@@ -56,28 +60,30 @@ export default function ProVerification() {
               <tr className="border-b border-gray-100">
                 <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                   <span className="flex items-center gap-1">
-                    Name <ChevronDown className="h-4 w-4" />
+                    {TEXT.nameColumn} <ChevronDown className="h-4 w-4" />
                   </span>
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                   <span className="flex items-center gap-1">
-                    Government ID <ChevronDown className="h-4 w-4" />
+                    {DOC_TYPES.governmentId} <ChevronDown className="h-4 w-4" />
                   </span>
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                   <span className="flex items-center gap-1">
-                    Professional License <ChevronDown className="h-4 w-4" />
+                    {DOC_TYPES.license} <ChevronDown className="h-4 w-4" />
                   </span>
                 </th>
                 <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                   <span className="flex items-center gap-1">
-                    Business Insurance <ChevronDown className="h-4 w-4" />
+                    {DOC_TYPES.insurance} <ChevronDown className="h-4 w-4" />
                   </span>
                 </th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-muted">Submitted</th>
+                <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
+                  {TEXT.submittedColumn}
+                </th>
                 <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                   <span className="flex items-center gap-1">
-                    Action <ChevronDown className="h-4 w-4" />
+                    {COMMON_TEXT.action} <ChevronDown className="h-4 w-4" />
                   </span>
                 </th>
               </tr>
@@ -116,7 +122,7 @@ export default function ProVerification() {
                       className="flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-primary"
                     >
                       <Eye className="h-4 w-4" />
-                      Review
+                      {COMMON_TEXT.review}
                     </button>
                   </td>
                 </tr>
@@ -124,7 +130,7 @@ export default function ProVerification() {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted">
-                    No results found.
+                    {COMMON_TEXT.noResults}
                   </td>
                 </tr>
               )}
@@ -133,7 +139,7 @@ export default function ProVerification() {
 
           {/* Footer / Pagination */}
           <div className="flex items-center justify-center gap-4 border-t border-gray-100 px-4 py-4">
-            <span className="text-sm text-muted">Per page</span>
+            <span className="text-sm text-muted">{COMMON_TEXT.perPage}</span>
             <div
               className="flex items-center gap-1 rounded-lg border px-3 py-1.5"
               style={{ borderColor: '#D9D9D9' }}
@@ -145,7 +151,7 @@ export default function ProVerification() {
               className="rounded-lg border px-4 py-2 text-sm font-medium"
               style={{ borderColor: '#D9D9D9', color: '#6A6A6A' }}
             >
-              Next
+              {COMMON_TEXT.next}
             </button>
           </div>
         </div>

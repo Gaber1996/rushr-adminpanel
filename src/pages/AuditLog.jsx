@@ -3,6 +3,9 @@ import { SlidersHorizontal, Circle, ChevronDown, Check } from 'lucide-react'
 import { AUDIT_LOGS, AUDIT_MODULES } from '../data/auditLogs'
 import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
+import { AUDIT_LOG_TEXT, COMMON_TEXT } from '../texts'
+
+const TEXT = AUDIT_LOG_TEXT
 
 const PER_PAGE_OPTIONS = [5, 10, 20, 50]
 
@@ -10,11 +13,11 @@ const HIGH_IMPACT_BG = '#FFF7F7'
 const HIGH_IMPACT_BORDER = '#C20A0A'
 
 const COLUMNS = [
-  { key: 'timestamp', label: 'Date & Time', width: '153px' },
-  { key: 'actor', label: 'Actor', width: '164px' },
-  { key: 'module', label: 'Module', width: '198px' },
-  { key: 'action', label: 'Actions' },
-  { key: 'reason', label: 'Reason', width: '311px' },
+  { key: 'timestamp', label: TEXT.columns.timestamp, width: '153px' },
+  { key: 'actor', label: TEXT.columns.actor, width: '164px' },
+  { key: 'module', label: TEXT.columns.module, width: '198px' },
+  { key: 'action', label: TEXT.columns.action },
+  { key: 'reason', label: COMMON_TEXT.reason, width: '311px' },
 ]
 
 function Legend() {
@@ -25,7 +28,7 @@ function Legend() {
     >
       <Circle className="h-5 w-5 shrink-0" style={{ color: HIGH_IMPACT_BORDER }} />
       <span className="font-medium text-ink" style={{ fontSize: '16px', lineHeight: '16px' }}>
-        Red-highlighted fields represent high-impact actions.
+        {TEXT.legend}
       </span>
     </div>
   )
@@ -92,10 +95,10 @@ export default function AuditLog() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Audit Logs"
+        title={TEXT.title}
         titleTone="ink"
         textGapClassName="gap-3"
-        subtitle="Stay informed about every action and change made across the platform."
+        subtitle={TEXT.subtitle}
       />
 
       <div className="flex flex-col gap-4">
@@ -123,7 +126,7 @@ export default function AuditLog() {
               >
                 <SlidersHorizontal className="h-6 w-6" style={{ color: '#0052B0' }} />
                 <span className="font-bold" style={{ fontSize: '18px', color: '#0052B0' }}>
-                  Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                  {TEXT.filterLabel(activeFilterCount)}
                 </span>
               </button>
 
@@ -138,7 +141,7 @@ export default function AuditLog() {
                   }}
                 >
                   <span className="px-1 font-semibold text-muted" style={{ fontSize: '12px' }}>
-                    Module
+                    {TEXT.moduleHeading}
                   </span>
                   {AUDIT_MODULES.map((name) => {
                     const checked = moduleFilter.includes(name)
@@ -173,7 +176,7 @@ export default function AuditLog() {
                       className={`${highImpactOnly ? 'font-semibold' : 'font-medium'}`}
                       style={{ fontSize: '14px', color: HIGH_IMPACT_BORDER }}
                     >
-                      High-impact only
+                      {TEXT.highImpactOnly}
                     </span>
                     {highImpactOnly && (
                       <Check
@@ -191,7 +194,7 @@ export default function AuditLog() {
                       className="rounded-lg px-2 py-2 text-left font-semibold text-muted hover:bg-gray-50"
                       style={{ fontSize: '14px' }}
                     >
-                      Clear all
+                      {TEXT.clearAll}
                     </button>
                   )}
                 </div>
@@ -301,7 +304,7 @@ export default function AuditLog() {
                       className="px-4 py-10 text-center text-sm text-muted"
                       style={{ borderBottom: '1px solid #D9D9D9' }}
                     >
-                      No results found.
+                      {COMMON_TEXT.noResults}
                     </td>
                   </tr>
                 )}
@@ -331,7 +334,7 @@ export default function AuditLog() {
                   }}
                 >
                   <span className="font-semibold text-muted" style={{ fontSize: '14px' }}>
-                    Per page
+                    {COMMON_TEXT.perPage}
                   </span>
                 </div>
                 <button
@@ -391,12 +394,12 @@ export default function AuditLog() {
                   boxShadow: '0px 0.5px 1px 0px rgba(0,0,0,0.05)',
                 }}
               >
-                Prev
+                {COMMON_TEXT.prev}
               </button>
 
               {/* Page indicator */}
               <span className="font-medium text-muted" style={{ fontSize: '14px' }}>
-                Page {currentPage} of {totalPages}
+                {COMMON_TEXT.pageOf(currentPage, totalPages)}
               </span>
 
               {/* Next */}
@@ -415,7 +418,7 @@ export default function AuditLog() {
                   boxShadow: '0px 0.5px 1px 0px rgba(0,0,0,0.05)',
                 }}
               >
-                Next
+                {COMMON_TEXT.next}
               </button>
             </div>
           </div>

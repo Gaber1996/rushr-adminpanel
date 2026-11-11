@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { matchPath, useLocation } from 'react-router-dom'
 import { ROUTE_TITLES } from '../config/routes'
+import { NAVIGATION_TEXT } from '../texts'
 
-const BASE_TITLE = 'Rushr Admin'
+const BASE_TITLE = NAVIGATION_TEXT.baseTitle
 
 /** "<Page> | Rushr Admin" for the current route, or just "Rushr Admin". */
 export function titleFor(pathname) {

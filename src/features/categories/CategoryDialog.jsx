@@ -3,9 +3,11 @@ import { Upload } from 'lucide-react'
 import Modal from '../../components/ui/Modal'
 import Button from '../../components/ui/Button'
 import TextField from '../../components/ui/TextField'
+import { CATEGORIES_TEXT } from '../../texts'
 
 const FIELD_LABEL = 'text-[18px] font-semibold text-ink'
 const TITLE_ID = 'category-dialog-title'
+const TEXT = CATEGORIES_TEXT.dialog
 /** Panel size shared with DeleteCategoryDialog. */
 export const CATEGORY_DIALOG_CLASS = 'w-[1055px] rounded-3xl bg-surface'
 
@@ -71,33 +73,33 @@ function CategoryForm({ category, onSubmit, loading }) {
     <div className="flex flex-col gap-6 p-6 md:p-10">
       <div className="flex flex-col gap-8">
         <h3 id={TITLE_ID} className="text-2xl font-bold leading-none text-ink md:text-[32px]">
-          {isEdit ? 'Edit New Category' : 'Add New Category'}
+          {isEdit ? TEXT.editTitle : TEXT.addTitle}
         </h3>
 
         <div className="flex flex-col gap-5">
           <TextField
-            label="Category Name"
+            label={TEXT.nameLabel}
             labelClassName={FIELD_LABEL}
             value={form.name}
             onChange={set('name')}
-            placeholder="e.g. Plumbing"
+            placeholder={TEXT.namePlaceholder}
             required
           />
           <TextField
-            label="Category Icon"
+            label={TEXT.iconLabel}
             labelClassName={FIELD_LABEL}
             inputClassName="h-12"
             leading={<Upload className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />}
             value={form.iconName}
             onChange={set('iconName')}
-            placeholder="Upload Category Icon"
+            placeholder={TEXT.iconPlaceholder}
           />
           <TextField
-            label="Issue Types (comma separated)"
+            label={TEXT.issueTypesLabel}
             labelClassName={FIELD_LABEL}
             value={form.issueTypes}
             onChange={set('issueTypes')}
-            placeholder="e.g. Leaking pipe, Running toilet, Clogged drain, Broken faucet"
+            placeholder={TEXT.issueTypesPlaceholder}
           />
         </div>
       </div>
@@ -111,7 +113,7 @@ function CategoryForm({ category, onSubmit, loading }) {
             disabled={!form.name.trim() || loading}
             onClick={() => submit(true)}
           >
-            Save , Add Another
+            {TEXT.saveAndAddAnother}
           </Button>
         )}
         <Button
@@ -121,7 +123,7 @@ function CategoryForm({ category, onSubmit, loading }) {
           disabled={!form.name.trim()}
           onClick={() => submit(false)}
         >
-          {isEdit ? 'Save Changes' : 'Save Category'}
+          {isEdit ? TEXT.saveChanges : TEXT.saveCategory}
         </Button>
       </div>
     </div>

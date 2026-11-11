@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { clearSession } from '../lib/session'
 import { ROUTES } from '../config/routes'
+import { NAVIGATION_TEXT } from '../texts'
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -12,12 +13,24 @@ import {
 } from 'lucide-react'
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.dashboard },
-  { label: 'Pro Verification', icon: ShieldCheck, path: ROUTES.proVerification },
-  { label: 'Dispute Resolution', icon: MessageSquareWarning, path: ROUTES.disputeResolution },
-  { label: 'User Management', icon: Users, path: ROUTES.userManagement },
-  { label: 'Platform Settings', icon: Settings, path: ROUTES.platformSettings },
-  { label: 'Audit Log', icon: ClipboardList, path: ROUTES.auditLog },
+  { label: NAVIGATION_TEXT.pages.dashboard, icon: LayoutDashboard, path: ROUTES.dashboard },
+  {
+    label: NAVIGATION_TEXT.pages.proVerification,
+    icon: ShieldCheck,
+    path: ROUTES.proVerification,
+  },
+  {
+    label: NAVIGATION_TEXT.pages.disputeResolution,
+    icon: MessageSquareWarning,
+    path: ROUTES.disputeResolution,
+  },
+  { label: NAVIGATION_TEXT.pages.userManagement, icon: Users, path: ROUTES.userManagement },
+  {
+    label: NAVIGATION_TEXT.pages.platformSettings,
+    icon: Settings,
+    path: ROUTES.platformSettings,
+  },
+  { label: NAVIGATION_TEXT.pages.auditLog, icon: ClipboardList, path: ROUTES.auditLog },
 ]
 
 export default function Sidebar() {
@@ -60,7 +73,7 @@ export default function Sidebar() {
           style={{ height: '40px' }}
         >
           <LogOut className="h-6 w-6 flex-shrink-0" />
-          <span className="text-base font-semibold">Log Out</span>
+          <span className="text-base font-semibold">{NAVIGATION_TEXT.logOut}</span>
         </button>
       </div>
     </aside>

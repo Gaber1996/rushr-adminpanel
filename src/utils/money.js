@@ -1,8 +1,10 @@
+import { COMMON_TEXT } from '../texts/common'
+
 // Money display and input. The API sends payment totals in dollars and resolutions in cents.
 
 /** "$120.00" from a dollar amount; '—' when missing. */
 export function formatMoney(amount) {
-  if (amount == null) return '—'
+  if (amount == null) return COMMON_TEXT.emptyValue
   return `$${Number(amount).toFixed(2)}`
 }
 

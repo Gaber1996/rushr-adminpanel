@@ -1,6 +1,7 @@
 import { Bell, Menu } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { getUser } from '../lib/session'
+import { COMMON_TEXT } from '../texts'
 
 /** Initials for the avatar; falls back to the original "AK" placeholder. */
 export function getInitials({ firstName, lastName }) {
@@ -19,7 +20,7 @@ export default function TopBar() {
         <Menu className="h-6 w-6 text-gray-400" />
       </button>
 
-      <img src={logo} alt="Rushr" className="h-[80px] w-[80px] object-contain" />
+      <img src={logo} alt={COMMON_TEXT.brandName} className="h-[80px] w-[80px] object-contain" />
 
       <div className="flex-1" />
 

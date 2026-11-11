@@ -10,6 +10,9 @@ import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
 import CategoryDialog from '../features/categories/CategoryDialog'
 import DeleteCategoryDialog from '../features/categories/DeleteCategoryDialog'
+import { CATEGORIES_TEXT, COMMON_TEXT } from '../texts'
+
+const TEXT = CATEGORIES_TEXT
 
 function EditIcon({ className = '' }) {
   return (
@@ -57,8 +60,8 @@ export default function PlatformSettings() {
     error,
     reload: reloadCategories,
   } = useApiResource(ENDPOINTS.categories, {
-    errorMessage: 'Failed to load categories.',
-    networkErrorMessage: 'Unable to connect to server.',
+    errorMessage: TEXT.loadError,
+    networkErrorMessage: COMMON_TEXT.networkError,
   })
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('categories')
@@ -80,10 +83,10 @@ export default function PlatformSettings() {
         reloadCategories()
         if (!addAnother) setAddOpen(false)
       } else {
-        alert(res.message || 'Failed to add category.')
+        alert(res.message || TEXT.addError)
       }
     } catch {
-      alert('Unable to connect to server.')
+      alert(COMMON_TEXT.networkError)
     } finally {
       setActionLoading(false)
     }
@@ -101,10 +104,10 @@ export default function PlatformSettings() {
         reloadCategories()
         setEditingCategory(null)
       } else {
-        alert(res.message || 'Failed to update category.')
+        alert(res.message || TEXT.updateError)
       }
     } catch {
-      alert('Unable to connect to server.')
+      alert(COMMON_TEXT.networkError)
     } finally {
       setActionLoading(false)
     }
@@ -121,10 +124,10 @@ export default function PlatformSettings() {
         reloadCategories()
         setDeletingCategory(null)
       } else {
-        alert(res.message || 'Failed to delete category.')
+        alert(res.message || TEXT.deleteError)
       }
     } catch {
-      alert('Unable to connect to server.')
+      alert(COMMON_TEXT.networkError)
     } finally {
       setActionLoading(false)
     }
@@ -135,22 +138,22 @@ export default function PlatformSettings() {
   )
 
   const tabs = [
-    { key: 'categories', label: 'Service Categories' },
-    { key: 'fees', label: 'Platform Fee Configuration' },
-    { key: 'cancellation', label: 'Cancellation Fee Settings' },
+    { key: 'categories', label: TEXT.tabs.categories },
+    { key: 'fees', label: TEXT.tabs.fees },
+    { key: 'cancellation', label: TEXT.tabs.cancellation },
   ]
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Platform Settings"
-        subtitle="Manage all your platform setting"
+        title={TEXT.title}
+        subtitle={TEXT.subtitle}
         textGapClassName="gap-3"
         subtitleClassName="text-base font-semibold leading-tight text-muted md:text-2xl md:leading-[30px]"
         actions={
           <Button size="lgCompact" onClick={() => setAddOpen(true)}>
             <Plus className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
-            Add New Category
+            {TEXT.addCategory}
           </Button>
         }
       />
@@ -183,7 +186,7 @@ export default function PlatformSettings() {
             <SearchInput value={search} onChange={setSearch} className="flex-1" />
             <Button variant="outlineAccent" size="field">
               <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
-              Filter
+              {COMMON_TEXT.filter}
             </Button>
           </div>
 
@@ -201,19 +204,19 @@ export default function PlatformSettings() {
                   <tr className="border-b border-gray-100">
                     <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                       <span className="flex items-center gap-1">
-                        Category Name <ChevronDown className="h-4 w-4" />
+                        {TEXT.nameColumn} <ChevronDown className="h-4 w-4" />
                       </span>
                     </th>
                     <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                       <span className="flex items-center gap-1">
-                        Issue Types <ChevronDown className="h-4 w-4" />
+                        {TEXT.issueTypesColumn} <ChevronDown className="h-4 w-4" />
                       </span>
                     </th>
                     <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
-                      Last Update
+                      {TEXT.lastUpdateColumn}
                     </th>
                     <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
-                      Actions
+                      {TEXT.actionsColumn}
                     </th>
                   </tr>
                 </thead>
@@ -235,14 +238,14 @@ export default function PlatformSettings() {
                             className="flex items-center gap-1.5 text-sm text-primary hover:underline"
                           >
                             <EditIcon />
-                            Edit
+                            {TEXT.edit}
                           </button>
                           <button
                             onClick={() => setDeletingCategory(cat)}
                             className="flex items-center gap-1.5 text-sm text-danger hover:underline"
                           >
                             <Trash2 className="h-4 w-4" />
-                            Delete
+                            {TEXT.delete}
                           </button>
                         </div>
                       </td>
@@ -251,7 +254,7 @@ export default function PlatformSettings() {
                   {filtered.length === 0 && (
                     <tr>
                       <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted">
-                        No categories found.
+                        {TEXT.empty}
                       </td>
                     </tr>
                   )}
@@ -260,7 +263,7 @@ export default function PlatformSettings() {
 
               {/* Footer / Pagination */}
               <div className="flex items-center justify-center gap-4 border-t border-gray-100 px-4 py-4">
-                <span className="text-sm text-muted">Per page</span>
+                <span className="text-sm text-muted">{COMMON_TEXT.perPage}</span>
                 <div
                   className="flex items-center gap-1 rounded-lg border px-3 py-1.5"
                   style={{ borderColor: '#D9D9D9' }}
@@ -272,7 +275,7 @@ export default function PlatformSettings() {
                   className="rounded-lg border px-4 py-2 text-sm font-medium"
                   style={{ borderColor: '#D9D9D9', color: '#6A6A6A' }}
                 >
-                  Next
+                  {COMMON_TEXT.next}
                 </button>
               </div>
             </div>
@@ -280,7 +283,7 @@ export default function PlatformSettings() {
         </>
       ) : (
         <div className="flex items-center justify-center py-20">
-          <p className="text-xl font-bold text-gray-300">Coming Soon</p>
+          <p className="text-xl font-bold text-gray-300">{COMMON_TEXT.comingSoon}</p>
         </div>
       )}
 

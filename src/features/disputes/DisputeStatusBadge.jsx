@@ -1,5 +1,6 @@
 import { Check, Clock } from 'lucide-react'
 import StatusBadge from '../../components/ui/StatusBadge'
+import { DISPUTES_TEXT } from '../../texts'
 
 // The backend has three resolved statuses (RESOLVED_RELEASED / _REFUNDED / _SPLIT) and OPEN.
 // Anything that is not a resolved one reads as "In Review".
@@ -15,7 +16,7 @@ export default function DisputeStatusBadge({ status }) {
       shape="pill"
       icon={<Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />}
     >
-      Resolved
+      {DISPUTES_TEXT.status.resolved}
     </StatusBadge>
   ) : (
     <StatusBadge
@@ -23,7 +24,7 @@ export default function DisputeStatusBadge({ status }) {
       shape="pill"
       icon={<Clock className="h-4 w-4" aria-hidden="true" />}
     >
-      In Review
+      {DISPUTES_TEXT.status.inReview}
     </StatusBadge>
   )
 }

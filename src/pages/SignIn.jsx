@@ -5,6 +5,7 @@ import { apiRequest } from '../config/api'
 import { saveSession } from '../lib/session'
 import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
+import { AUTH_TEXT, COMMON_TEXT } from '../texts'
 import logo from '../assets/logo.png'
 import bgImage from '../assets/signin-bg.png'
 
@@ -31,12 +32,12 @@ export default function SignIn() {
         saveSession(res.data)
         navigate(ROUTES.home)
       } else if (res.success && res.data?.role !== 'ADMIN') {
-        setError('Access denied. Admin privileges required.')
+        setError(AUTH_TEXT.accessDenied)
       } else {
-        setError(res.message || 'Login failed. Please check your credentials.')
+        setError(res.message || AUTH_TEXT.loginFailed)
       }
     } catch {
-      setError('Unable to connect to server. Please try again later.')
+      setError(AUTH_TEXT.networkError)
     } finally {
       setLoading(false)
     }
@@ -57,7 +58,11 @@ export default function SignIn() {
       {/* Center content */}
       <div className="relative z-10 flex flex-col items-center gap-10">
         {/* Logo */}
-        <img src={logo} alt="Rushr" className="h-[163px] w-[163px] object-contain" />
+        <img
+          src={logo}
+          alt={COMMON_TEXT.brandName}
+          className="h-[163px] w-[163px] object-contain"
+        />
 
         {/* Card */}
         <div
@@ -71,13 +76,13 @@ export default function SignIn() {
                 className="text-center leading-[40px]"
                 style={{ fontSize: '40px', fontWeight: 800, color: '#0F0F0F' }}
               >
-                Welcome Back!
+                {AUTH_TEXT.title}
               </h1>
               <p
                 className="text-center"
                 style={{ fontSize: '20px', fontWeight: 600, color: '#6A6A6A', lineHeight: '20px' }}
               >
-                Sign In To Your Account
+                {AUTH_TEXT.subtitle}
               </p>
             </div>
 
@@ -102,20 +107,22 @@ export default function SignIn() {
                 {/* Email */}
                 <div className="flex flex-col gap-2">
                   <label
+                    htmlFor="signin-email"
                     className=""
                     style={{ fontSize: '16px', fontWeight: 500, color: '#0F0F0F' }}
                   >
-                    Email
+                    {AUTH_TEXT.emailLabel}
                   </label>
                   <div
                     className="flex items-center gap-3 rounded-xl border px-3 py-2"
                     style={{ borderColor: '#D9D9D9', height: '56px' }}
                   >
                     <input
+                      id="signin-email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
+                      placeholder={AUTH_TEXT.emailPlaceholder}
                       required
                       className="flex-1 bg-transparent text-sm outline-none"
                       style={{ color: '#0F0F0F', fontSize: '14px' }}
@@ -127,10 +134,11 @@ export default function SignIn() {
                 {/* Password */}
                 <div className="flex flex-col gap-2">
                   <label
+                    htmlFor="signin-password"
                     className=""
                     style={{ fontSize: '16px', fontWeight: 500, color: '#0F0F0F' }}
                   >
-                    Password
+                    {AUTH_TEXT.passwordLabel}
                   </label>
                   <div
                     className="flex items-center gap-3 rounded-xl border px-3 py-2"
@@ -138,10 +146,11 @@ export default function SignIn() {
                   >
                     <Lock className="h-6 w-6 flex-shrink-0" style={{ color: '#6A6A6A' }} />
                     <input
+                      id="signin-password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder={AUTH_TEXT.passwordPlaceholder}
                       required
                       className="flex-1 bg-transparent text-sm outline-none"
                       style={{ color: '#0F0F0F', fontSize: '14px' }}
@@ -175,7 +184,7 @@ export default function SignIn() {
                 }}
               >
                 {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? AUTH_TEXT.submitting : AUTH_TEXT.submit}
               </button>
             </div>
           </form>

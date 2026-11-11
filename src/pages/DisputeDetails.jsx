@@ -22,6 +22,9 @@ import PageHeader from '../components/ui/PageHeader'
 import DisputeStatusBadge, { isResolvedStatus } from '../features/disputes/DisputeStatusBadge'
 import { formatDateTime, formatTime, parseDate } from '../utils/format'
 import { centsToMoney, formatMoney, moneyToCents } from '../utils/money'
+import { COMMON_TEXT, DISPUTES_TEXT } from '../texts'
+
+const TEXT = DISPUTES_TEXT.details
 
 // `total` is what the customer paid; `proNet` is what the pro would actually receive once the
 // platform's cut is taken — 12%, or 7% for a Pro+ pro — so the copy states the real figures.
@@ -29,28 +32,28 @@ function buildActions(total, proNet) {
   return [
     {
       key: 'FULL_REFUND',
-      title: 'Full Refund',
-      subtitle: `Return ${total} to customer`,
+      title: TEXT.fullRefundTitle,
+      subtitle: TEXT.fullRefundSubtitle(total),
       selectedBg: '#FFF7F7',
       selectedBorder: '#C20A0A',
     },
     {
       key: 'PARTIAL_REFUND',
-      title: 'Partial Refund',
-      subtitle: 'Split payment between parties',
+      title: TEXT.partialRefundTitle,
+      subtitle: TEXT.partialRefundSubtitle,
       selectedBg: '#FFFAEC',
       selectedBorder: '#FFC107',
     },
     {
       key: 'RELEASE_PAYMENT',
-      title: 'Release Payment',
-      subtitle: `Pay ${proNet} to pro`,
+      title: TEXT.releasePaymentTitle,
+      subtitle: TEXT.releasePaymentSubtitle(proNet),
       selectedBg: '#EFFFF5',
       selectedBorder: '#00861D',
     },
     {
       key: 'CUSTOM_SPLIT',
-      title: 'Custom Split',
+      title: TEXT.customSplitTitle,
       selectedBg: '#F4F9FF',
       selectedBorder: '#438DE1',
     },
@@ -83,9 +86,9 @@ function mediaUrl(filePath) {
 /** The backend measures the arrival gap in km; the design states it in miles. */
 function distanceLine(event) {
   if (event.distanceKm != null) {
-    return `${(event.distanceKm * 0.621371).toFixed(1)} miles from customer location.`
+    return TEXT.milesFromCustomer((event.distanceKm * 0.621371).toFixed(1))
   }
-  return event.note || '0.5 miles from customer location.'
+  return event.note || TEXT.defaultDistance
 }
 
 /**
@@ -118,7 +121,7 @@ function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
             onClick={() => setOpen(true)}
             className="flex items-center justify-center hover:bg-gray-50"
             style={{ height: '32px', borderBottom: '1px solid #D9D9D9' }}
-            aria-label="Expand"
+            aria-label={TEXT.expand}
           >
             <Plus className="h-4 w-4 text-ink" />
           </button>
@@ -127,7 +130,7 @@ function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
             onClick={() => setOpen(false)}
             className="flex items-center justify-center hover:bg-gray-50"
             style={{ height: '32px' }}
-            aria-label="Collapse"
+            aria-label={TEXT.collapse}
           >
             <Minus className="h-4 w-4 text-ink" />
           </button>
@@ -273,13 +276,13 @@ function SuccessModal({ open, onClose, autoDismissMs = 2500 }) {
           className="mt-8 text-center font-extrabold text-ink"
           style={{ fontSize: '32px', lineHeight: '1.2' }}
         >
-          Action completed successfully!
+          {TEXT.successTitle}
         </h3>
         <p
           className="mt-4 text-center font-medium text-muted"
           style={{ fontSize: '18px', lineHeight: '1.5', maxWidth: '600px' }}
         >
-          The action was completed successfully and now shared with the customer and pro.
+          {TEXT.successMessage}
         </p>
       </div>
     </div>
@@ -313,7 +316,7 @@ function BackLink({ onClick }) {
   return (
     <button onClick={onClick} className="inline-flex items-center gap-2 font-semibold text-primary">
       <ArrowLeft className="h-5 w-5" />
-      Back
+      {COMMON_TEXT.back}
     </button>
   )
 }
@@ -328,7 +331,7 @@ export default function DisputeDetails() {
     error,
     reload,
   } = useApiResource(ENDPOINTS.dispute(id), {
-    errorMessage: 'Could not load this dispute.',
+    errorMessage: TEXT.loadError,
   })
 
   const [selectedAction, setSelectedAction] = useState(null)
@@ -355,7 +358,7 @@ export default function DisputeDetails() {
         <BackLink onClick={() => navigate(ROUTES.disputeResolution)} />
         <div className="flex items-center gap-2 text-muted">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Loading dispute…
+          {TEXT.loading}
         </div>
       </div>
     )
@@ -365,9 +368,9 @@ export default function DisputeDetails() {
     return (
       <div className="flex flex-col items-start gap-4">
         <BackLink onClick={() => navigate(ROUTES.disputeResolution)} />
-        <p className="text-danger">{error || 'Dispute not found.'}</p>
+        <p className="text-danger">{error || TEXT.notFound}</p>
         <Button variant="secondary" size="sm" onClick={reload}>
-          Try again
+          {COMMON_TEXT.tryAgain}
         </Button>
       </div>
     )
@@ -397,12 +400,18 @@ export default function DisputeDetails() {
       const derived = parseDate(assignedAt)
       if (derived) {
         derived.setMinutes(derived.getMinutes() + 1)
-        return { label: step.label, time: formatTime(derived) ?? '—', recorded: true }
+        return {
+          label: step.label,
+          time: formatTime(derived) ?? COMMON_TEXT.emptyValue,
+          recorded: true,
+        }
       }
     }
     return {
       label: step.label,
-      time: step.recorded ? (formatTime(step.timestamp) ?? '—') : '—',
+      time: step.recorded
+        ? (formatTime(step.timestamp) ?? COMMON_TEXT.emptyValue)
+        : COMMON_TEXT.emptyValue,
       recorded: !!step.recorded,
     }
   })
@@ -410,10 +419,10 @@ export default function DisputeDetails() {
   const locationItems = (dispute.locationHistory ?? []).map((event) => {
     const arrived = event.label === 'Arrived At Location'
     const time = formatTime(event.timestamp)
-    const caption = arrived ? 'Near destination.' : event.note || 'Pro began trip.'
+    const caption = arrived ? TEXT.nearDestination : event.note || TEXT.tripStarted
     return {
       title: event.label,
-      subtitle: time ? `${time}- ${caption}` : caption,
+      subtitle: time ? TEXT.locationSubtitle(time, caption) : caption,
       address: arrived ? distanceLine(event) : (placeLine(event) ?? jobAddress ?? ''),
       highlighted: arrived,
     }
@@ -442,9 +451,9 @@ export default function DisputeDetails() {
 
   let splitError = null
   if (outcome === 'CUSTOM_SPLIT') {
-    if (overTotal) splitError = `An amount can't be more than ${totalPaid}.`
+    if (overTotal) splitError = TEXT.splitOverTotal(totalPaid)
     else if (consumerCents != null && proCents != null && !splitBalanced) {
-      splitError = `Both amounts must add up to ${totalPaid}.`
+      splitError = TEXT.splitUnbalanced(totalPaid)
     }
   }
 
@@ -479,10 +488,10 @@ export default function DisputeDetails() {
         method: 'POST',
         body: JSON.stringify(body),
       })
-      if (!res?.success) throw new Error(res?.message || 'Could not resolve this dispute.')
+      if (!res?.success) throw new Error(res?.message || TEXT.resolveError)
       setSuccessOpen(true)
     } catch (err) {
-      setSubmitError(err.message || 'Could not resolve this dispute.')
+      setSubmitError(err.message || TEXT.resolveError)
     } finally {
       setSubmitting(false)
     }
@@ -492,12 +501,12 @@ export default function DisputeDetails() {
     <div className="flex flex-col gap-8">
       {/* Header row */}
       <PageHeader
-        title="Dispute Resolution"
+        title={TEXT.title}
         titleTone="ink"
         onBack={() => navigate(ROUTES.disputeResolution)}
         textGapClassName="gap-3"
         subtitleClassName="text-base font-semibold leading-4 text-muted"
-        subtitle={`Case ${dispute.caseId} - ${formatDateTime(dispute.createdAt)}`}
+        subtitle={TEXT.caseSubtitle(dispute.caseId, formatDateTime(dispute.createdAt))}
         actions={<DisputeStatusBadge status={dispute.status} />}
       />
 
@@ -506,25 +515,49 @@ export default function DisputeDetails() {
         {/* Left column */}
         <div className="flex flex-col gap-6" style={{ width: '716px' }}>
           {/* Customer Info */}
-          <CollapsibleCard icon={<User className="h-6 w-6 text-ink" />} title="Customer Info">
+          <CollapsibleCard
+            icon={<User className="h-6 w-6 text-ink" />}
+            title={TEXT.customerInfoTitle}
+          >
             <div className="flex flex-col gap-4">
-              <InfoLine>Customer Name: {dispute.customerInfo?.name || '—'}</InfoLine>
-              <InfoLine>Phone Number: {dispute.customerInfo?.phone || '—'}</InfoLine>
-              <InfoLine>Location: {dispute.customerInfo?.location || '—'}</InfoLine>
+              <InfoLine>
+                {TEXT.customerNameLabel}
+                {dispute.customerInfo?.name || COMMON_TEXT.emptyValue}
+              </InfoLine>
+              <InfoLine>
+                {TEXT.phoneLabel}
+                {dispute.customerInfo?.phone || COMMON_TEXT.emptyValue}
+              </InfoLine>
+              <InfoLine>
+                {TEXT.locationLabel}
+                {dispute.customerInfo?.location || COMMON_TEXT.emptyValue}
+              </InfoLine>
             </div>
           </CollapsibleCard>
 
           {/* Pro Info */}
-          <CollapsibleCard icon={<Briefcase className="h-6 w-6 text-ink" />} title="Pro Info">
+          <CollapsibleCard
+            icon={<Briefcase className="h-6 w-6 text-ink" />}
+            title={TEXT.proInfoTitle}
+          >
             <div className="flex flex-col gap-4">
               {dispute.proInfo ? (
                 <>
-                  <InfoLine>Pro Name: {dispute.proInfo.name || '—'}</InfoLine>
-                  <InfoLine>Phone Number: {dispute.proInfo.phone || '—'}</InfoLine>
-                  <InfoLine>Location: {dispute.proInfo.location || '—'}</InfoLine>
+                  <InfoLine>
+                    {TEXT.proNameLabel}
+                    {dispute.proInfo.name || COMMON_TEXT.emptyValue}
+                  </InfoLine>
+                  <InfoLine>
+                    {TEXT.phoneLabel}
+                    {dispute.proInfo.phone || COMMON_TEXT.emptyValue}
+                  </InfoLine>
+                  <InfoLine>
+                    {TEXT.locationLabel}
+                    {dispute.proInfo.location || COMMON_TEXT.emptyValue}
+                  </InfoLine>
                 </>
               ) : (
-                <InfoLine>No pro was assigned to this request.</InfoLine>
+                <InfoLine>{TEXT.noPro}</InfoLine>
               )}
             </div>
           </CollapsibleCard>
@@ -532,7 +565,7 @@ export default function DisputeDetails() {
           {/* Dispute Details */}
           <CollapsibleCard
             icon={<AlertCircle className="h-6 w-6 text-ink" />}
-            title="Dispute Details"
+            title={TEXT.disputeDetailsTitle}
           >
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
@@ -540,20 +573,21 @@ export default function DisputeDetails() {
                   className="font-semibold text-muted"
                   style={{ fontSize: '14px', lineHeight: '14px' }}
                 >
-                  Service ID: Ser-
+                  {TEXT.serviceIdPrefix}
                   {dispute.disputeDetails?.serviceRequestId ?? dispute.serviceRequestId}
                 </p>
                 <p
                   className="font-semibold text-muted"
                   style={{ fontSize: '14px', lineHeight: '14px' }}
                 >
-                  Case {dispute.disputeDetails?.caseId ?? dispute.caseId}
+                  {TEXT.casePrefix}
+                  {dispute.disputeDetails?.caseId ?? dispute.caseId}
                 </p>
                 <p
                   className="font-medium text-ink"
                   style={{ fontSize: '20px', lineHeight: '20px' }}
                 >
-                  {dispute.disputeDetails?.reason || '—'}
+                  {dispute.disputeDetails?.reason || COMMON_TEXT.emptyValue}
                 </p>
               </div>
               {attachments.length > 0 && (
@@ -571,7 +605,7 @@ export default function DisputeDetails() {
                     >
                       <img
                         src={mediaUrl(file.filePath)}
-                        alt={file.fileName || 'Dispute evidence'}
+                        alt={file.fileName || TEXT.evidenceAlt}
                         className="rounded bg-[#EEEEEE] object-cover"
                         style={{ width: '80px', height: '80px' }}
                       />
@@ -583,12 +617,18 @@ export default function DisputeDetails() {
           </CollapsibleCard>
 
           {/* Service Timeline */}
-          <CollapsibleCard icon={<Clock className="h-6 w-6 text-ink" />} title="Service Timeline">
+          <CollapsibleCard
+            icon={<Clock className="h-6 w-6 text-ink" />}
+            title={TEXT.serviceTimelineTitle}
+          >
             <Timeline steps={timelineSteps} />
           </CollapsibleCard>
 
           {/* Location History */}
-          <CollapsibleCard icon={<MapPin className="h-6 w-6 text-ink" />} title="Location History">
+          <CollapsibleCard
+            icon={<MapPin className="h-6 w-6 text-ink" />}
+            title={TEXT.locationHistoryTitle}
+          >
             <div className="flex flex-col">
               {locationItems.length > 0 ? (
                 locationItems.map((item, idx) => (
@@ -600,7 +640,7 @@ export default function DisputeDetails() {
                 ))
               ) : (
                 <p className="font-semibold text-muted" style={{ fontSize: '16px' }}>
-                  No location was recorded for this job.
+                  {TEXT.noLocation}
                 </p>
               )}
             </div>
@@ -609,14 +649,17 @@ export default function DisputeDetails() {
           {/* Payment Details */}
           <CollapsibleCard
             icon={<CreditCard className="h-6 w-6 text-ink" />}
-            title="Payment Details"
+            title={TEXT.paymentDetailsTitle}
           >
             <div className="flex flex-col rounded-xl border border-line px-3 py-4">
-              <PaymentRow label="Total paid:" value={totalPaid} isBlue />
-              <PaymentRow label="Method:" value={payment?.method || 'Online'} />
-              <PaymentRow label="Charged at:" value={formatTime(payment?.chargedAt) ?? '—'} />
+              <PaymentRow label={TEXT.totalPaidLabel} value={totalPaid} isBlue />
+              <PaymentRow label={TEXT.methodLabel} value={payment?.method || TEXT.defaultMethod} />
               <PaymentRow
-                label="Status:"
+                label={TEXT.chargedAtLabel}
+                value={formatTime(payment?.chargedAt) ?? COMMON_TEXT.emptyValue}
+              />
+              <PaymentRow
+                label={TEXT.statusLabel}
                 isLast
                 value={(() => {
                   // Funds are settled once the case is resolved — show that in green.
@@ -634,7 +677,7 @@ export default function DisputeDetails() {
                         fontSize: '14px',
                       }}
                     >
-                      {payment?.statusLabel || '—'}
+                      {payment?.statusLabel || COMMON_TEXT.emptyValue}
                     </span>
                   )
                 })()}
@@ -647,7 +690,7 @@ export default function DisputeDetails() {
         <div className="rounded-3xl bg-surface-muted px-4 py-6" style={{ width: '320px' }}>
           <div className="flex flex-col gap-6">
             <h3 className="font-bold text-ink" style={{ fontSize: '20px', lineHeight: '20px' }}>
-              Resolution Actions
+              {TEXT.resolutionActionsTitle}
             </h3>
             <div className="flex flex-col gap-4">
               {actions.map((action) => {
@@ -701,12 +744,14 @@ export default function DisputeDetails() {
                         <div className="mt-2 flex flex-col gap-4" style={{ width: '272px' }}>
                           <div className="flex flex-col gap-2">
                             <label
+                              htmlFor="consumer-refund"
                               className="font-semibold text-ink"
                               style={{ fontSize: '14px', lineHeight: '14px' }}
                             >
-                              Consumer Refund Amount
+                              {TEXT.consumerRefundLabel}
                             </label>
                             <input
+                              id="consumer-refund"
                               type="text"
                               value={consumerRefund}
                               onChange={(e) =>
@@ -714,19 +759,21 @@ export default function DisputeDetails() {
                               }
                               onClick={(e) => e.stopPropagation()}
                               readOnly={isResolved}
-                              placeholder="Enter custom amount"
+                              placeholder={TEXT.customAmountPlaceholder}
                               className="rounded-lg border bg-white px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted read-only:text-muted focus:border-primary"
                               style={{ borderColor: '#D9D9D9', fontSize: '14px' }}
                             />
                           </div>
                           <div className="flex flex-col gap-2">
                             <label
+                              htmlFor="pro-refund"
                               className="font-semibold text-ink"
                               style={{ fontSize: '14px', lineHeight: '14px' }}
                             >
-                              Pro Refund Amount
+                              {TEXT.proRefundLabel}
                             </label>
                             <input
+                              id="pro-refund"
                               type="text"
                               value={proRefund}
                               onChange={(e) =>
@@ -734,7 +781,7 @@ export default function DisputeDetails() {
                               }
                               onClick={(e) => e.stopPropagation()}
                               readOnly={isResolved}
-                              placeholder="Enter custom amount"
+                              placeholder={TEXT.customAmountPlaceholder}
                               className="rounded-lg border bg-white px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted read-only:text-muted focus:border-primary"
                               style={{ borderColor: '#D9D9D9', fontSize: '14px' }}
                             />
@@ -757,10 +804,12 @@ export default function DisputeDetails() {
               {/* Admin note */}
               <div className="flex flex-col gap-3" style={{ width: '288px' }}>
                 <label
+                  htmlFor="admin-note"
                   className="font-medium text-ink"
                   style={{ fontSize: '16px', lineHeight: '16px' }}
                 >
-                  Admin Note<span className="text-danger">*</span>
+                  {TEXT.adminNoteLabel}
+                  <span className="text-danger">{COMMON_TEXT.requiredMark}</span>
                 </label>
                 {showRecordedNote ? (
                   <div className="rounded-lg border px-2 py-3" style={{ borderColor: '#D9D9D9' }}>
@@ -768,14 +817,15 @@ export default function DisputeDetails() {
                       className="font-normal text-muted"
                       style={{ fontSize: '14px', lineHeight: '1.5' }}
                     >
-                      {resolutionReason || adminNote || '—'}
+                      {resolutionReason || adminNote || COMMON_TEXT.emptyValue}
                     </p>
                   </div>
                 ) : (
                   <textarea
+                    id="admin-note"
                     value={adminNote}
                     onChange={(e) => setAdminNote(e.target.value)}
-                    placeholder="Document your reasoning for this action.."
+                    placeholder={TEXT.adminNotePlaceholder}
                     className="rounded-lg border px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted focus:border-primary"
                     style={{
                       height: '133px',
@@ -811,7 +861,7 @@ export default function DisputeDetails() {
                     }}
                   >
                     {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
-                    Confirm Decision
+                    {TEXT.confirmDecision}
                   </button>
                 </>
               )}

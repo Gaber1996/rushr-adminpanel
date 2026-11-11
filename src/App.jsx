@@ -10,6 +10,7 @@ import AuditLog from './pages/AuditLog'
 import { useDocumentTitle } from './hooks/useDocumentTitle'
 import { clearSession, isLoggedIn } from './lib/session'
 import { ROUTES } from './config/routes'
+import { NAVIGATION_TEXT } from './texts'
 
 function ProtectedRoute({ children }) {
   if (!isLoggedIn()) {
@@ -34,7 +35,11 @@ function App() {
       >
         <Route
           path={ROUTES.dashboard}
-          element={<div className="text-2xl font-bold text-gray-400">Dashboard - Coming Soon</div>}
+          element={
+            <div className="text-2xl font-bold text-gray-400">
+              {NAVIGATION_TEXT.dashboardComingSoon}
+            </div>
+          }
         />
         <Route path={ROUTES.proVerification} element={<ProVerification />} />
         <Route path={ROUTES.verificationDetails} element={<VerificationDetails />} />
@@ -43,7 +48,9 @@ function App() {
         <Route
           path={ROUTES.userManagement}
           element={
-            <div className="text-2xl font-bold text-gray-400">User Management - Coming Soon</div>
+            <div className="text-2xl font-bold text-gray-400">
+              {NAVIGATION_TEXT.userManagementComingSoon}
+            </div>
           }
         />
         <Route path={ROUTES.platformSettings} element={<PlatformSettings />} />

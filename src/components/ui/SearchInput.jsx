@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { COMMON_TEXT } from '../../texts'
 
 const APPEARANCES = {
   /** 1px grey border. */
@@ -11,7 +12,7 @@ const APPEARANCES = {
 export default function SearchInput({
   value,
   onChange,
-  placeholder = 'Search',
+  placeholder = COMMON_TEXT.search,
   label,
   appearance = 'outline',
   className = '',
