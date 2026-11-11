@@ -5,7 +5,6 @@ import {
   Briefcase,
   AlertCircle,
   Clock,
-  Check,
   MapPin,
   CreditCard,
   Plus,
@@ -18,6 +17,9 @@ import { getDocumentFileUrl } from '../utils/documentFile'
 import { useApiResource } from '../hooks/useApiResource'
 import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
+import Button from '../components/ui/Button'
+import PageHeader from '../components/ui/PageHeader'
+import DisputeStatusBadge, { isResolvedStatus } from '../features/disputes/DisputeStatusBadge'
 import { formatDateTime, formatTime, parseDate } from '../utils/format'
 import { centsToMoney, formatMoney, moneyToCents } from '../utils/money'
 
@@ -141,26 +143,6 @@ function InfoLine({ children }) {
     <p className="font-semibold text-ink" style={{ fontSize: '16px', lineHeight: '20px' }}>
       {children}
     </p>
-  )
-}
-
-function StatusPill({ resolved }) {
-  const palette = resolved
-    ? { bg: '#EFFFF5', border: '#00861D', text: '#00861D' }
-    : { bg: '#F7F7F7', border: '#6A6A6A', text: '#6A6A6A' }
-  return (
-    <span
-      className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-semibold"
-      style={{
-        backgroundColor: palette.bg,
-        borderColor: palette.border,
-        color: palette.text,
-        fontSize: '14px',
-      }}
-    >
-      {resolved ? <Check className="h-4 w-4" strokeWidth={3} /> : <Clock className="h-4 w-4" />}
-      {resolved ? 'Resolved' : 'In Review'}
-    </span>
   )
 }
 
@@ -384,19 +366,14 @@ export default function DisputeDetails() {
       <div className="flex flex-col items-start gap-4">
         <BackLink onClick={() => navigate(ROUTES.disputeResolution)} />
         <p className="text-danger">{error || 'Dispute not found.'}</p>
-        <button
-          type="button"
-          onClick={reload}
-          className="rounded-lg px-4 py-2 font-semibold transition-colors hover:bg-primary-soft"
-          style={{ border: '1px solid #0067DE', color: '#0052B0', fontSize: '14px' }}
-        >
+        <Button variant="secondary" size="sm" onClick={reload}>
           Try again
-        </button>
+        </Button>
       </div>
     )
   }
 
-  const isResolved = typeof dispute.status === 'string' && dispute.status.startsWith('RESOLVED')
+  const isResolved = isResolvedStatus(dispute.status)
   const payment = dispute.paymentDetails
   const totalPaid = formatMoney(payment?.totalPaid)
   const totalPaidCents = payment?.totalPaidCents ?? null
@@ -514,29 +491,15 @@ export default function DisputeDetails() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header row */}
-      <div className="flex items-start justify-between gap-20">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(ROUTES.disputeResolution)}
-              className="text-muted transition-colors hover:text-primary"
-              aria-label="Back"
-            >
-              <ArrowLeft className="h-7 w-7" />
-            </button>
-            <h1
-              className="font-extrabold text-ink"
-              style={{ fontSize: '40px', lineHeight: '40px' }}
-            >
-              Dispute Resolution
-            </h1>
-          </div>
-          <p className="font-semibold text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
-            Case {dispute.caseId} - {formatDateTime(dispute.createdAt)}
-          </p>
-        </div>
-        <StatusPill resolved={isResolved} />
-      </div>
+      <PageHeader
+        title="Dispute Resolution"
+        titleTone="ink"
+        onBack={() => navigate(ROUTES.disputeResolution)}
+        textGapClassName="gap-3"
+        subtitleClassName="text-base font-semibold leading-4 text-muted"
+        subtitle={`Case ${dispute.caseId} - ${formatDateTime(dispute.createdAt)}`}
+        actions={<DisputeStatusBadge status={dispute.status} />}
+      />
 
       {/* Main grid: left content + right resolution actions */}
       <div className="flex items-start gap-6">

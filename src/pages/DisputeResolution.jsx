@@ -1,52 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Eye, Clock, Check, ChevronDown, Loader2 } from 'lucide-react'
+import { Eye, ChevronDown, Loader2 } from 'lucide-react'
 import emptyFolder from '../assets/empty-folder.png'
 import { useApiResource } from '../hooks/useApiResource'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 import { toDisputeDetails } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
+import PageHeader from '../components/ui/PageHeader'
+import SearchInput from '../components/ui/SearchInput'
+import DisputeStatusBadge from '../features/disputes/DisputeStatusBadge'
 
 const PER_PAGE_OPTIONS = [10, 20, 50]
-
-// The backend has three resolved statuses (RESOLVED_RELEASED / _REFUNDED / _SPLIT)
-// and OPEN. Anything that is not a resolved one reads as "In Review".
-function isResolved(status) {
-  return typeof status === 'string' && status.startsWith('RESOLVED')
-}
-
-function StatusBadge({ status }) {
-  if (isResolved(status)) {
-    return (
-      <span
-        className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-semibold"
-        style={{
-          backgroundColor: '#EFFFF5',
-          borderColor: '#00861D',
-          color: '#00861D',
-          fontSize: '14px',
-        }}
-      >
-        <Check className="h-4 w-4" strokeWidth={3} />
-        Resolved
-      </span>
-    )
-  }
-  return (
-    <span
-      className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-semibold"
-      style={{
-        backgroundColor: '#F7F7F7',
-        borderColor: '#6A6A6A',
-        color: '#6A6A6A',
-        fontSize: '14px',
-      }}
-    >
-      <Clock className="h-4 w-4" />
-      In Review
-    </span>
-  )
-}
 
 export default function DisputeResolution() {
   const navigate = useNavigate()
@@ -95,9 +59,7 @@ export default function DisputeResolution() {
   if (!loading && !error && rows.length === 0 && !debouncedSearch) {
     return (
       <div className="flex h-full flex-col">
-        <h1 className="font-extrabold text-ink" style={{ fontSize: '40px', lineHeight: '40px' }}>
-          Dispute Resolution
-        </h1>
+        <PageHeader title="Dispute Resolution" titleTone="ink" />
         <div className="flex flex-1 flex-col items-center justify-center gap-2">
           <img
             src={emptyFolder}
@@ -118,29 +80,14 @@ export default function DisputeResolution() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <h1 className="font-extrabold text-ink" style={{ fontSize: '40px', lineHeight: '40px' }}>
-        Dispute Resolution
-      </h1>
+      <PageHeader title="Dispute Resolution" titleTone="ink" />
 
-      {/* Search */}
-      <div
-        className="flex items-center gap-2 rounded-xl px-3"
-        style={{
-          height: '56px',
-          backgroundColor: '#FEFEFE',
-          boxShadow: '0px 0px 0px 1px #E5E5E5, 0px 1px 3px 0px rgba(0,0,0,0.06)',
-        }}
-      >
-        <Search className="h-6 w-6 text-muted" />
-        <input
-          type="text"
-          placeholder="Search by dispute ID, customer or pro name"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by dispute ID, customer or pro name"
+        appearance="elevated"
+      />
 
       {/* Table */}
       <div
@@ -263,7 +210,7 @@ export default function DisputeResolution() {
                       }}
                     >
                       <div className="flex items-center justify-center">
-                        <StatusBadge status={d.status} />
+                        <DisputeStatusBadge status={d.status} />
                       </div>
                     </td>
                     <td

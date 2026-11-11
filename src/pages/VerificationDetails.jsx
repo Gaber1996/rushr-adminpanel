@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { FileText, Loader2, CheckCircle2, XCircle, Clock, ArrowLeft, X } from 'lucide-react'
+import { FileText, Loader2, CheckCircle2, XCircle, ArrowLeft, X } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
 import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
 import { formatDate } from '../utils/format'
+import Button from '../components/ui/Button'
+import ErrorState from '../components/ui/ErrorState'
+import Modal from '../components/ui/Modal'
+import PageHeader from '../components/ui/PageHeader'
+import TextField from '../components/ui/TextField'
+import VerificationStatusBadge from '../features/verification/VerificationStatusBadge'
 import { loadDocumentFile } from '../utils/documentFile'
 
 const DOC_TYPE_LABELS = {
@@ -19,48 +25,6 @@ const DOC_TYPE_TO_STEP = {
   GOVERNMENT_ID: 'GOV_ID',
   LICENSE: 'LICENSE',
   INSURANCE: 'INSURANCE',
-}
-
-const STATUS_CONFIG = {
-  APPROVED: {
-    bg: '#ECFDF5',
-    text: '#059669',
-    border: '#A7F3D0',
-    label: 'Approved',
-    icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-  },
-  REJECTED: {
-    bg: '#FEF2F2',
-    text: '#DC2626',
-    border: '#FECACA',
-    label: 'Rejected',
-    icon: <XCircle className="h-3.5 w-3.5" />,
-  },
-  EXPIRED: {
-    bg: '#FEF2F2',
-    text: '#DC2626',
-    border: '#FECACA',
-    label: 'Expired',
-    icon: <XCircle className="h-3.5 w-3.5" />,
-  },
-  PENDING: {
-    bg: '#F9FAFB',
-    text: '#6B7280',
-    border: '#E5E7EB',
-    label: 'pending',
-    icon: <Clock className="h-3.5 w-3.5" />,
-  },
-  SUBMITTED: {
-    bg: '#F9FAFB',
-    text: '#6B7280',
-    border: '#E5E7EB',
-    label: 'pending',
-    icon: <Clock className="h-3.5 w-3.5" />,
-  },
-}
-
-function getStatus(status) {
-  return STATUS_CONFIG[status] || STATUS_CONFIG.PENDING
 }
 
 function DocImage({ fileUrl, mimeType, alt }) {
@@ -114,15 +78,33 @@ function DocImage({ fileUrl, mimeType, alt }) {
   )
 }
 
+const ACTION_TITLE_ID = 'verification-action-title'
+
 function ActionModal({ isOpen, action, docLabel, onClose, onSubmit, loading }) {
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      labelledBy={ACTION_TITLE_ID}
+      dismissOnBackdrop={false}
+      className="w-[480px] rounded-2xl bg-white"
+    >
+      {/* Mounted per open, so the fields start empty each time. */}
+      <ActionForm
+        action={action}
+        docLabel={docLabel}
+        onClose={onClose}
+        onSubmit={onSubmit}
+        loading={loading}
+      />
+    </Modal>
+  )
+}
+
+function ActionForm({ action, docLabel, onClose, onSubmit, loading }) {
   const [reason, setReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
-
-  if (!isOpen) return null
-
   const isApprove = action === 'approve'
-  const title = isApprove ? 'Approve Document' : 'Reject Document'
-  const accentColor = isApprove ? '#0067DE' : '#DC2626'
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -131,79 +113,64 @@ function ActionModal({ isOpen, action, docLabel, onClose, onSubmit, loading }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-[480px] rounded-2xl bg-white shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pb-4 pt-6">
-          <h3 className="text-lg font-bold text-heading">{title}</h3>
-          <button onClick={onClose} className="text-muted transition-colors hover:text-heading">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 pb-6">
-          <p className="text-sm text-muted">
-            {isApprove ? 'Approving' : 'Rejecting'}{' '}
-            <strong className="text-heading">{docLabel}</strong>
-          </p>
-
-          {/* Reason */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-ink">
-              Reason <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder={
-                isApprove
-                  ? 'e.g. Document is clear and valid'
-                  : 'e.g. Document is blurry or expired'
-              }
-              rows={3}
-              className="w-full resize-none rounded-xl border px-3 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
-              style={{ borderColor: '#D9D9D9' }}
-            />
-          </div>
-
-          {/* Admin Notes */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-ink">
-              Admin Notes <span className="text-muted">(optional)</span>
-            </label>
-            <textarea
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="Additional notes for internal reference"
-              rows={2}
-              className="w-full resize-none rounded-xl border px-3 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
-              style={{ borderColor: '#D9D9D9' }}
-            />
-          </div>
-
-          {/* Buttons */}
-          <div className="mt-1 flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-12 flex-1 rounded-xl border text-sm font-semibold text-muted transition-colors hover:bg-gray-50"
-              style={{ borderColor: '#D9D9D9' }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!reason.trim() || loading}
-              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-50"
-              style={{ backgroundColor: accentColor }}
-            >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isApprove ? 'Approve' : 'Reject'}
-            </button>
-          </div>
-        </form>
+    <>
+      <div className="flex items-center justify-between px-6 pb-4 pt-6">
+        <h3 id={ACTION_TITLE_ID} className="text-lg font-bold text-heading">
+          {isApprove ? 'Approve Document' : 'Reject Document'}
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="text-muted transition-colors hover:text-heading"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
-    </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 pb-6">
+        <p className="text-sm text-muted">
+          {isApprove ? 'Approving' : 'Rejecting'}{' '}
+          <strong className="text-heading">{docLabel}</strong>
+        </p>
+
+        <TextField
+          label="Reason"
+          hint={<span className="text-red-500">*</span>}
+          rows={3}
+          gapClassName="gap-1.5"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={
+            isApprove ? 'e.g. Document is clear and valid' : 'e.g. Document is blurry or expired'
+          }
+        />
+        <TextField
+          label="Admin Notes"
+          hint={<span className="text-muted">(optional)</span>}
+          rows={2}
+          gapClassName="gap-1.5"
+          value={adminNotes}
+          onChange={(e) => setAdminNotes(e.target.value)}
+          placeholder="Additional notes for internal reference"
+        />
+
+        <div className="mt-1 flex gap-3">
+          <Button variant="outline" size="mdSemibold" className="flex-1" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant={isApprove ? 'primary' : 'dangerSoft'}
+            className="flex-1"
+            loading={loading}
+            disabled={!reason.trim()}
+          >
+            {isApprove ? 'Approve' : 'Reject'}
+          </Button>
+        </div>
+      </form>
+    </>
   )
 }
 
@@ -314,14 +281,7 @@ export default function VerificationDetails() {
   }
 
   if (error) {
-    return (
-      <div
-        className="rounded-xl px-4 py-3 text-sm font-medium"
-        style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
-      >
-        {error}
-      </div>
-    )
+    return <ErrorState message={error} />
   }
 
   return (
@@ -329,24 +289,14 @@ export default function VerificationDetails() {
       {/* Header */}
       <div>
         <button
+          type="button"
           onClick={() => navigate(ROUTES.proVerification)}
           className="mb-4 flex items-center gap-2 text-sm text-muted transition-colors hover:text-primary"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Verification Queue
         </button>
-        <h1
-          className="font-extrabold text-heading"
-          style={{ fontSize: '40px', lineHeight: '40px' }}
-        >
-          Verification Details
-        </h1>
-        <p
-          className="mt-4 font-semibold text-muted"
-          style={{ fontSize: '24px', lineHeight: '24px' }}
-        >
-          Review pro information and documents
-        </p>
+        <PageHeader title="Verification Details" subtitle="Review pro information and documents" />
       </div>
 
       {/* Content: Left (Info + Docs) + Right (Document Viewer) */}
@@ -377,7 +327,6 @@ export default function VerificationDetails() {
             <h2 className="mb-4 text-lg font-bold text-heading">Documents</h2>
             <div className="flex flex-col gap-2">
               {documents.map((doc) => {
-                const status = getStatus(doc.verificationStatus)
                 const isSelected = selectedDoc?.documentId === doc.documentId
                 return (
                   <button
@@ -401,17 +350,7 @@ export default function VerificationDetails() {
                         </p>
                       </div>
                     </div>
-                    <span
-                      className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
-                      style={{
-                        backgroundColor: status.bg,
-                        color: status.text,
-                        border: `1px solid ${status.border}`,
-                      }}
-                    >
-                      {status.icon}
-                      {status.label}
-                    </span>
+                    <VerificationStatusBadge status={doc.verificationStatus} className="shrink-0" />
                   </button>
                 )
               })}

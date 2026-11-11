@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
-import { Search, SlidersHorizontal, Circle, ChevronDown, Check } from 'lucide-react'
+import { SlidersHorizontal, Circle, ChevronDown, Check } from 'lucide-react'
 import { AUDIT_LOGS, AUDIT_MODULES } from '../data/auditLogs'
+import PageHeader from '../components/ui/PageHeader'
+import SearchInput from '../components/ui/SearchInput'
 
 const PER_PAGE_OPTIONS = [5, 10, 20, 50]
 
@@ -89,15 +91,12 @@ export default function AuditLog() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3">
-        <h1 className="font-extrabold text-ink" style={{ fontSize: '40px', lineHeight: '40px' }}>
-          Audit Logs
-        </h1>
-        <p className="font-semibold text-muted" style={{ fontSize: '24px', lineHeight: '24px' }}>
-          Stay informed about every action and change made across the platform.
-        </p>
-      </div>
+      <PageHeader
+        title="Audit Logs"
+        titleTone="ink"
+        textGapClassName="gap-3"
+        subtitle="Stay informed about every action and change made across the platform."
+      />
 
       <div className="flex flex-col gap-4">
         <Legend />
@@ -105,26 +104,15 @@ export default function AuditLog() {
         <div className="flex flex-col gap-8">
           {/* Search + Filter */}
           <div className="flex items-center gap-6">
-            <div
-              className="flex flex-1 items-center gap-2 rounded-xl px-3"
-              style={{
-                height: '56px',
-                backgroundColor: '#FEFEFE',
-                boxShadow: '0px 0px 0px 1px #E5E5E5, 0px 1px 3px 0px rgba(0,0,0,0.06)',
+            <SearchInput
+              value={search}
+              onChange={(value) => {
+                setSearch(value)
+                setPage(1)
               }}
-            >
-              <Search className="h-6 w-6 text-muted" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value)
-                  setPage(1)
-                }}
-                className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-              />
-            </div>
+              appearance="elevated"
+              className="flex-1"
+            />
 
             <div className="relative shrink-0">
               <button

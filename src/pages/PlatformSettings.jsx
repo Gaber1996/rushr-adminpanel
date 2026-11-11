@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react'
-import { Search, SlidersHorizontal, Plus, Trash2, ChevronDown, Loader2, Upload } from 'lucide-react'
+import { useState } from 'react'
+import { SlidersHorizontal, Plus, Trash2, ChevronDown, Loader2 } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
 import { ENDPOINTS } from '../config/endpoints'
 import { formatDate } from '../utils/format'
+import Button from '../components/ui/Button'
+import ErrorState from '../components/ui/ErrorState'
+import PageHeader from '../components/ui/PageHeader'
+import SearchInput from '../components/ui/SearchInput'
+import CategoryDialog from '../features/categories/CategoryDialog'
+import DeleteCategoryDialog from '../features/categories/DeleteCategoryDialog'
 
 function EditIcon({ className = '' }) {
   return (
@@ -43,248 +49,6 @@ function EditIcon({ className = '' }) {
 }
 
 // ─── Add / Edit Modal (Figma: 1055w, radius 44, gap 24) ─────────────
-function CategoryModal({ isOpen, onClose, onSubmit, loading, category }) {
-  const isEdit = !!category
-  const [name, setName] = useState('')
-  const [iconName, setIconName] = useState('')
-  const [issueTypes, setIssueTypes] = useState('')
-  const [description, setDescription] = useState('')
-  const [searchKeywords, setSearchKeywords] = useState('')
-  const [displayOrder, setDisplayOrder] = useState(1)
-
-  useEffect(() => {
-    if (category) {
-      setName(category.name || '')
-      setIconName(category.iconName || '')
-      setIssueTypes((category.issueTypes || []).join(', '))
-      setDescription(category.description || '')
-      setSearchKeywords(category.searchKeywords || '')
-      setDisplayOrder(category.displayOrder || 1)
-    } else {
-      setName('')
-      setIconName('')
-      setIssueTypes('')
-      setDescription('')
-      setSearchKeywords('')
-      setDisplayOrder(1)
-    }
-  }, [category, isOpen])
-
-  if (!isOpen) return null
-
-  function buildPayload() {
-    return {
-      name: name.trim(),
-      description: description.trim() || name.trim(),
-      iconName: iconName.trim() || name.trim().toLowerCase().replace(/\s+/g, '-'),
-      searchKeywords: searchKeywords.trim() || name.trim().toLowerCase(),
-      active: true,
-      displayOrder,
-      issueTypes: issueTypes
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean),
-    }
-  }
-
-  function handleSubmit(e, addAnother = false) {
-    e.preventDefault()
-    if (!name.trim()) return
-    onSubmit(buildPayload(), addAnother)
-    if (addAnother) {
-      setName('')
-      setIconName('')
-      setIssueTypes('')
-      setDescription('')
-      setSearchKeywords('')
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-surface shadow-xl"
-        style={{ width: '1055px', borderRadius: '44px', padding: '40px' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col gap-6" style={{ width: '975px', margin: '0 auto' }}>
-          {/* Fields */}
-          <div className="flex flex-col gap-8">
-            <h3 className="font-bold text-ink" style={{ fontSize: '32px', lineHeight: '32px' }}>
-              {isEdit ? 'Edit New Category' : 'Add New Category'}
-            </h3>
-
-            <div className="flex flex-col gap-5">
-              {/* Category Name */}
-              <div className="flex flex-col gap-2">
-                <label className="font-semibold text-ink" style={{ fontSize: '18px' }}>
-                  Category Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Plumbing"
-                  required
-                  className="w-full rounded-xl border px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
-                  style={{ borderColor: '#D9D9D9', height: '56px' }}
-                />
-              </div>
-
-              {/* Category Icon */}
-              <div className="flex flex-col gap-2">
-                <label className="font-semibold text-ink" style={{ fontSize: '18px' }}>
-                  Category Icon
-                </label>
-                <div
-                  className="flex w-full cursor-pointer items-center gap-2 rounded-xl border px-3 transition-colors hover:border-blue-400"
-                  style={{ borderColor: '#D9D9D9', height: '48px' }}
-                >
-                  <Upload className="h-4 w-4 text-muted" />
-                  <input
-                    type="text"
-                    value={iconName}
-                    onChange={(e) => setIconName(e.target.value)}
-                    placeholder="Upload Category Icon"
-                    className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-                  />
-                </div>
-              </div>
-
-              {/* Issue Types */}
-              <div className="flex flex-col gap-2">
-                <label className="font-semibold text-ink" style={{ fontSize: '18px' }}>
-                  Issue Types (comma separated)
-                </label>
-                <input
-                  type="text"
-                  value={issueTypes}
-                  onChange={(e) => setIssueTypes(e.target.value)}
-                  placeholder="e.g. Leaking pipe, Running toilet, Clogged drain, Broken faucet"
-                  className="w-full rounded-xl border px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
-                  style={{ borderColor: '#D9D9D9', height: '56px' }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-6">
-            {!isEdit && (
-              <button
-                type="button"
-                onClick={(e) => handleSubmit(e, true)}
-                disabled={!name.trim() || loading}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border font-extrabold transition-colors hover:bg-blue-50 disabled:opacity-50"
-                style={{
-                  borderColor: '#0067DE',
-                  color: '#0052B0',
-                  height: '56px',
-                  fontSize: '18px',
-                }}
-              >
-                Save , Add Another
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={(e) => handleSubmit(e, false)}
-              disabled={!name.trim() || loading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl font-extrabold text-surface transition-colors disabled:opacity-50"
-              style={{ backgroundColor: '#0067DE', height: '56px', fontSize: '18px' }}
-            >
-              {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-              {isEdit ? 'Save Changes' : 'Save Category'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Delete Modal (Figma: 1055w, radius 44, trash SVG) ──────────────
-function DeleteModal({ isOpen, onClose, onConfirm, loading, categoryName }) {
-  if (!isOpen) return null
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onClose}
-    >
-      <div
-        className="flex flex-col items-center bg-surface shadow-xl"
-        style={{ width: '1055px', borderRadius: '44px', padding: '40px' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col items-center gap-1" style={{ width: '975px' }}>
-          {/* Trash Icon SVG matching Figma */}
-          <svg
-            width="160"
-            height="160"
-            viewBox="0 0 322 322"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="322" height="322" rx="161" fill="white" />
-            <g transform="translate(75, 60)">
-              <rect x="28" y="0" width="116" height="6" rx="3" fill="#9CA3AF" />
-              <rect x="20" y="10" width="132" height="18" rx="4" fill="#F9AFAF" />
-              <path
-                d="M12 35 L16 185 Q17 195 27 195 L145 195 Q155 195 156 185 L160 35 Z"
-                fill="#C20A0A"
-              />
-              <rect x="0" y="28" width="172" height="14" rx="7" fill="#C20A0A" />
-              <rect x="50" y="55" width="14" height="120" rx="7" fill="#FFF7F7" />
-              <rect x="80" y="55" width="14" height="118" rx="7" fill="#FFF7F7" />
-              <rect x="110" y="55" width="14" height="117" rx="7" fill="#FFF7F7" />
-            </g>
-          </svg>
-
-          {/* Text */}
-          <div className="flex flex-col items-center gap-6" style={{ width: '871px' }}>
-            <h3
-              className="text-center font-extrabold text-ink"
-              style={{ fontSize: '40px', lineHeight: '40px' }}
-            >
-              Delete This Category ?
-            </h3>
-            <p
-              className="text-center font-semibold text-muted"
-              style={{ fontSize: '24px', lineHeight: '24px' }}
-            >
-              Are you sure you want to delete this category? This action cannot be undone.
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="mt-8 flex w-full gap-6" style={{ width: '975px' }}>
-            <button
-              onClick={onClose}
-              className="flex flex-1 items-center justify-center rounded-xl border font-extrabold transition-colors hover:bg-gray-50"
-              style={{ borderColor: '#D9D9D9', color: '#6A6A6A', height: '56px', fontSize: '18px' }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              disabled={loading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl font-extrabold text-surface transition-colors disabled:opacity-50"
-              style={{ backgroundColor: '#C20A0A', height: '56px', fontSize: '18px' }}
-            >
-              {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-              Delete Category
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── Main Page ───────────────────────────────────────────────────────
 export default function PlatformSettings() {
   const {
@@ -300,9 +64,9 @@ export default function PlatformSettings() {
   const [activeTab, setActiveTab] = useState('categories')
 
   // Modal states
-  const [addModal, setAddModal] = useState(false)
-  const [editModal, setEditModal] = useState(null)
-  const [deleteModal, setDeleteModal] = useState(null)
+  const [addOpen, setAddOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(null)
+  const [deletingCategory, setDeletingCategory] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
 
   async function handleAddCategory(payload, addAnother) {
@@ -314,7 +78,7 @@ export default function PlatformSettings() {
       })
       if (res.success) {
         reloadCategories()
-        if (!addAnother) setAddModal(false)
+        if (!addAnother) setAddOpen(false)
       } else {
         alert(res.message || 'Failed to add category.')
       }
@@ -326,16 +90,16 @@ export default function PlatformSettings() {
   }
 
   async function handleEditCategory(payload) {
-    if (!editModal) return
+    if (!editingCategory) return
     setActionLoading(true)
     try {
-      const res = await apiRequest(ENDPOINTS.category(editModal.id), {
+      const res = await apiRequest(ENDPOINTS.category(editingCategory.id), {
         method: 'PUT',
         body: JSON.stringify(payload),
       })
       if (res.success) {
         reloadCategories()
-        setEditModal(null)
+        setEditingCategory(null)
       } else {
         alert(res.message || 'Failed to update category.')
       }
@@ -347,15 +111,15 @@ export default function PlatformSettings() {
   }
 
   async function handleDeleteCategory() {
-    if (!deleteModal) return
+    if (!deletingCategory) return
     setActionLoading(true)
     try {
-      const res = await apiRequest(ENDPOINTS.category(deleteModal.id), {
+      const res = await apiRequest(ENDPOINTS.category(deletingCategory.id), {
         method: 'DELETE',
       })
       if (res.success) {
         reloadCategories()
-        setDeleteModal(null)
+        setDeletingCategory(null)
       } else {
         alert(res.message || 'Failed to delete category.')
       }
@@ -378,28 +142,18 @@ export default function PlatformSettings() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-3">
-          <h1
-            className="font-extrabold text-heading"
-            style={{ fontSize: '40px', lineHeight: '40px' }}
-          >
-            Platform Settings
-          </h1>
-          <p className="font-semibold text-muted" style={{ fontSize: '24px', lineHeight: '30px' }}>
-            Manage all your platform setting
-          </p>
-        </div>
-        <button
-          onClick={() => setAddModal(true)}
-          className="flex items-center gap-2 rounded-xl px-6 font-extrabold text-white"
-          style={{ backgroundColor: '#0067DE', height: '56px', fontSize: '16px' }}
-        >
-          <Plus className="h-5 w-5" strokeWidth={3} />
-          Add New Category
-        </button>
-      </div>
+      <PageHeader
+        title="Platform Settings"
+        subtitle="Manage all your platform setting"
+        textGapClassName="gap-3"
+        subtitleClassName="text-base font-semibold leading-tight text-muted md:text-2xl md:leading-[30px]"
+        actions={
+          <Button size="lgCompact" onClick={() => setAddOpen(true)}>
+            <Plus className="h-5 w-5" strokeWidth={3} aria-hidden="true" />
+            Add New Category
+          </Button>
+        }
+      />
 
       {/* Tabs - Figma style: filled active tab */}
       <div className="flex">
@@ -424,28 +178,13 @@ export default function PlatformSettings() {
       {/* Tab Content */}
       {activeTab === 'categories' ? (
         <>
-          {/* Search & Filter */}
-          <div className="flex items-center gap-6">
-            <div
-              className="flex flex-1 items-center gap-2 rounded-xl border px-3"
-              style={{ borderColor: '#D9D9D9', height: '56px', backgroundColor: '#FEFEFE' }}
-            >
-              <Search className="h-6 w-6 text-muted" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-              />
-            </div>
-            <button
-              className="flex items-center gap-2 rounded-xl border px-4 font-semibold"
-              style={{ borderColor: '#0067DE', height: '56px', fontSize: '16px', color: '#0067DE' }}
-            >
-              <SlidersHorizontal className="h-5 w-5" />
+          {/* Filter is not wired to the API yet — later. */}
+          <div className="flex items-center gap-3 md:gap-6">
+            <SearchInput value={search} onChange={setSearch} className="flex-1" />
+            <Button variant="outlineAccent" size="field">
+              <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
               Filter
-            </button>
+            </Button>
           </div>
 
           {/* Table */}
@@ -454,12 +193,7 @@ export default function PlatformSettings() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div
-              className="rounded-xl px-4 py-3 text-sm font-medium"
-              style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
-            >
-              {error}
-            </div>
+            <ErrorState message={error} />
           ) : (
             <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
               <table className="w-full">
@@ -497,14 +231,14 @@ export default function PlatformSettings() {
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-5">
                           <button
-                            onClick={() => setEditModal(cat)}
+                            onClick={() => setEditingCategory(cat)}
                             className="flex items-center gap-1.5 text-sm text-primary hover:underline"
                           >
                             <EditIcon />
                             Edit
                           </button>
                           <button
-                            onClick={() => setDeleteModal(cat)}
+                            onClick={() => setDeletingCategory(cat)}
                             className="flex items-center gap-1.5 text-sm text-danger hover:underline"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -550,28 +284,20 @@ export default function PlatformSettings() {
         </div>
       )}
 
-      {/* Add Category Modal */}
-      <CategoryModal
-        isOpen={addModal}
-        onClose={() => setAddModal(false)}
-        onSubmit={handleAddCategory}
+      <CategoryDialog
+        open={addOpen || Boolean(editingCategory)}
+        category={editingCategory}
+        onClose={() => {
+          setAddOpen(false)
+          setEditingCategory(null)
+        }}
+        onSubmit={editingCategory ? handleEditCategory : handleAddCategory}
         loading={actionLoading}
-        category={null}
       />
 
-      {/* Edit Category Modal */}
-      <CategoryModal
-        isOpen={!!editModal}
-        onClose={() => setEditModal(null)}
-        onSubmit={handleEditCategory}
-        loading={actionLoading}
-        category={editModal}
-      />
-
-      {/* Delete Category Modal */}
-      <DeleteModal
-        isOpen={!!deleteModal}
-        onClose={() => setDeleteModal(null)}
+      <DeleteCategoryDialog
+        open={Boolean(deletingCategory)}
+        onClose={() => setDeletingCategory(null)}
         onConfirm={handleDeleteCategory}
         loading={actionLoading}
       />

@@ -1,70 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, SlidersHorizontal, Eye, ChevronDown, Loader2 } from 'lucide-react'
+import { SlidersHorizontal, Eye, ChevronDown, Loader2 } from 'lucide-react'
 import { useApiResource } from '../hooks/useApiResource'
 import { toVerificationDetails } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
 import { formatDate } from '../utils/format'
-
-const STATUS_STYLES = {
-  APPROVED: {
-    bg: '#ECFDF5',
-    text: '#059669',
-    border: '#A7F3D0',
-    dot: '#059669',
-    label: 'Approved',
-  },
-  REJECTED: {
-    bg: '#FEF2F2',
-    text: '#DC2626',
-    border: '#FECACA',
-    dot: '#DC2626',
-    label: 'Rejected',
-  },
-  EXPIRED: {
-    bg: '#FEF2F2',
-    text: '#DC2626',
-    border: '#FECACA',
-    dot: '#DC2626',
-    label: 'Expired',
-  },
-  PENDING: {
-    bg: '#F9FAFB',
-    text: '#6B7280',
-    border: '#E5E7EB',
-    dot: '#6B7280',
-    label: 'pending',
-  },
-  SUBMITTED: {
-    bg: '#F9FAFB',
-    text: '#6B7280',
-    border: '#E5E7EB',
-    dot: '#6B7280',
-    label: 'pending',
-  },
-}
-
-function getStatusStyle(status) {
-  return STATUS_STYLES[status] || STATUS_STYLES.PENDING
-}
-
-function StatusBadge({ status }) {
-  const style = getStatusStyle(status)
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
-      style={{ backgroundColor: style.bg, color: style.text, border: `1px solid ${style.border}` }}
-    >
-      <span
-        className="flex h-3 w-3 items-center justify-center rounded-full text-white"
-        style={{ backgroundColor: style.dot, fontSize: '8px' }}
-      >
-        {status === 'APPROVED' ? '✓' : status === 'REJECTED' || status === 'EXPIRED' ? '✕' : '◷'}
-      </span>
-      {style.label}
-    </span>
-  )
-}
+import Button from '../components/ui/Button'
+import ErrorState from '../components/ui/ErrorState'
+import PageHeader from '../components/ui/PageHeader'
+import SearchInput from '../components/ui/SearchInput'
+import VerificationStatusBadge from '../features/verification/VerificationStatusBadge'
 
 export default function ProVerification() {
   const navigate = useNavigate()
@@ -81,54 +26,20 @@ export default function ProVerification() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-4">
-          <h1
-            className="font-extrabold text-heading"
-            style={{ fontSize: '40px', lineHeight: '40px' }}
-          >
-            Pro Verification
-          </h1>
-          <p className="font-semibold text-muted" style={{ fontSize: '24px', lineHeight: '24px' }}>
-            Review and approve pro verification documents.
-          </p>
-        </div>
-        <button
-          className="flex items-center justify-center rounded-xl font-extrabold text-white"
-          style={{
-            backgroundColor: '#0067DE',
-            height: '56px',
-            padding: '8px 32px',
-            fontSize: '18px',
-          }}
-        >
-          Export Report
-        </button>
-      </div>
+      {/* Export Report and Filter are not wired to the API yet — later. */}
+      <PageHeader
+        title="Pro Verification"
+        subtitle="Review and approve pro verification documents."
+        actions={<Button size="lg">Export Report</Button>}
+      />
 
       {/* Search & Filter */}
-      <div className="flex items-center gap-6">
-        <div
-          className="flex flex-1 items-center gap-2 rounded-xl border px-3"
-          style={{ borderColor: '#D9D9D9', height: '56px', backgroundColor: '#FEFEFE' }}
-        >
-          <Search className="h-6 w-6 text-muted" />
-          <input
-            type="text"
-            placeholder="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
-          />
-        </div>
-        <button
-          className="flex items-center gap-2 rounded-xl border px-4 font-semibold"
-          style={{ borderColor: '#D9D9D9', height: '56px', fontSize: '16px', color: '#0067DE' }}
-        >
-          <SlidersHorizontal className="h-5 w-5" />
+      <div className="flex items-center gap-3 md:gap-6">
+        <SearchInput value={search} onChange={setSearch} className="flex-1" />
+        <Button variant="outlinePrimary" size="field">
+          <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
           Filter
-        </button>
+        </Button>
       </div>
 
       {/* Table */}
@@ -137,12 +48,7 @@ export default function ProVerification() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : error ? (
-        <div
-          className="rounded-xl px-4 py-3 text-sm font-medium"
-          style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
-        >
-          {error}
-        </div>
+        <ErrorState message={error} />
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
           <table className="w-full">
@@ -186,13 +92,22 @@ export default function ProVerification() {
                     {item.firstName} {item.lastName}
                   </td>
                   <td className="px-4 py-4">
-                    <StatusBadge status={item.stepStatuses?.GOV_ID?.status || 'PENDING'} />
+                    <VerificationStatusBadge
+                      marker="dot"
+                      status={item.stepStatuses?.GOV_ID?.status || 'PENDING'}
+                    />
                   </td>
                   <td className="px-4 py-4">
-                    <StatusBadge status={item.stepStatuses?.LICENSE?.status || 'PENDING'} />
+                    <VerificationStatusBadge
+                      marker="dot"
+                      status={item.stepStatuses?.LICENSE?.status || 'PENDING'}
+                    />
                   </td>
                   <td className="px-4 py-4">
-                    <StatusBadge status={item.stepStatuses?.INSURANCE?.status || 'PENDING'} />
+                    <VerificationStatusBadge
+                      marker="dot"
+                      status={item.stepStatuses?.INSURANCE?.status || 'PENDING'}
+                    />
                   </td>
                   <td className="px-4 py-4 text-sm text-muted">{formatDate(item.submittedAt)}</td>
                   <td className="px-4 py-4">
