@@ -27,12 +27,26 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<div className="font-montserrat text-2xl font-bold text-gray-400">Dashboard - Coming Soon</div>} />
+        <Route
+          path="/dashboard"
+          element={
+            <div className="font-montserrat text-2xl font-bold text-gray-400">
+              Dashboard - Coming Soon
+            </div>
+          }
+        />
         <Route path="/pro-verification" element={<ProVerification />} />
         <Route path="/pro-verification/:contractorId" element={<VerificationDetails />} />
         <Route path="/dispute-resolution" element={<DisputeResolution />} />
         <Route path="/dispute-resolution/:id" element={<DisputeDetails />} />
-        <Route path="/user-management" element={<div className="font-montserrat text-2xl font-bold text-gray-400">User Management - Coming Soon</div>} />
+        <Route
+          path="/user-management"
+          element={
+            <div className="font-montserrat text-2xl font-bold text-gray-400">
+              User Management - Coming Soon
+            </div>
+          }
+        />
         <Route path="/platform-settings" element={<PlatformSettings />} />
         <Route path="/audit-log" element={<AuditLog />} />
         <Route path="/home" element={<Navigate to="/pro-verification" replace />} />

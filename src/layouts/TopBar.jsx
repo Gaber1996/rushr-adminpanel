@@ -7,22 +7,22 @@ export default function TopBar() {
 
   return (
     <header
-      className="w-full flex items-center gap-4 bg-white border-b border-gray-100"
+      className="flex w-full items-center gap-4 border-b border-gray-100 bg-white"
       style={{ height: '80px', padding: '12px 80px' }}
     >
       <button className="lg:hidden">
-        <Menu className="w-6 h-6 text-gray-400" />
+        <Menu className="h-6 w-6 text-gray-400" />
       </button>
 
-      <img src={logo} alt="Rushr" className="w-[80px] h-[80px] object-contain" />
+      <img src={logo} alt="Rushr" className="h-[80px] w-[80px] object-contain" />
 
       <div className="flex-1" />
 
       {/* Notification */}
-      <div className="relative w-14 h-14 flex items-center justify-center rounded-full hover:bg-gray-50 cursor-pointer">
-        <Bell className="w-6 h-6 text-[#6A6A6A]" />
+      <div className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full hover:bg-gray-50">
+        <Bell className="h-6 w-6 text-[#6A6A6A]" />
         <span
-          className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center rounded-md text-xs font-montserrat"
+          className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-md font-montserrat text-xs"
           style={{ backgroundColor: '#FFFBF3', color: '#D97706', fontSize: '12px' }}
         >
           4
@@ -31,7 +31,7 @@ export default function TopBar() {
 
       {/* Profile */}
       <div
-        className="w-14 h-14 rounded-full flex items-center justify-center text-white font-montserrat font-semibold"
+        className="flex h-14 w-14 items-center justify-center rounded-full font-montserrat font-semibold text-white"
         style={{ backgroundColor: '#0067DE', fontSize: '24px' }}
       >
         {initials}

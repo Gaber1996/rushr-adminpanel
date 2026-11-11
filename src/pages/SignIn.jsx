@@ -42,37 +42,37 @@ export default function SignIn() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center"
+      className="flex min-h-screen w-full items-center justify-center"
       style={{ backgroundColor: '#ECF5FF' }}
     >
       {/* Background pattern image */}
       <img
         src={bgImage}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-10"
       />
 
       {/* Center content */}
       <div className="relative z-10 flex flex-col items-center gap-10">
         {/* Logo */}
-        <img src={logo} alt="Rushr" className="w-[163px] h-[163px] object-contain" />
+        <img src={logo} alt="Rushr" className="h-[163px] w-[163px] object-contain" />
 
         {/* Card */}
         <div
-          className="w-[792px] rounded-[44px] flex items-center justify-center"
+          className="flex w-[792px] items-center justify-center rounded-[44px]"
           style={{ backgroundColor: '#FEFEFE', padding: '32px' }}
         >
-          <form onSubmit={handleSubmit} className="w-[728px] flex flex-col gap-12">
+          <form onSubmit={handleSubmit} className="flex w-[728px] flex-col gap-12">
             {/* Heading */}
             <div className="flex flex-col items-center gap-4">
               <h1
-                className="font-montserrat text-center leading-[40px]"
+                className="text-center font-montserrat leading-[40px]"
                 style={{ fontSize: '40px', fontWeight: 800, color: '#0F0F0F' }}
               >
                 Welcome Back!
               </h1>
               <p
-                className="font-montserrat text-center"
+                className="text-center font-montserrat"
                 style={{ fontSize: '20px', fontWeight: 600, color: '#6A6A6A', lineHeight: '20px' }}
               >
                 Sign In To Your Account
@@ -83,7 +83,14 @@ export default function SignIn() {
             <div className="flex flex-col gap-6">
               {/* Error message */}
               {error && (
-                <div className="px-4 py-3 rounded-xl text-sm font-montserrat font-medium" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                <div
+                  className="rounded-xl px-4 py-3 font-montserrat text-sm font-medium"
+                  style={{
+                    backgroundColor: '#FEF2F2',
+                    color: '#DC2626',
+                    border: '1px solid #FECACA',
+                  }}
+                >
                   {error}
                 </div>
               )}
@@ -108,10 +115,10 @@ export default function SignIn() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="flex-1 outline-none bg-transparent font-montserrat text-sm"
+                      className="flex-1 bg-transparent font-montserrat text-sm outline-none"
                       style={{ color: '#0F0F0F', fontSize: '14px' }}
                     />
-                    <Mail className="w-6 h-6 flex-shrink-0" style={{ color: '#6A6A6A' }} />
+                    <Mail className="h-6 w-6 flex-shrink-0" style={{ color: '#6A6A6A' }} />
                   </div>
                 </div>
 
@@ -127,14 +134,14 @@ export default function SignIn() {
                     className="flex items-center gap-3 rounded-xl border px-3 py-2"
                     style={{ borderColor: '#D9D9D9', height: '56px' }}
                   >
-                    <Lock className="w-6 h-6 flex-shrink-0" style={{ color: '#6A6A6A' }} />
+                    <Lock className="h-6 w-6 flex-shrink-0" style={{ color: '#6A6A6A' }} />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
                       required
-                      className="flex-1 outline-none bg-transparent font-montserrat text-sm"
+                      className="flex-1 bg-transparent font-montserrat text-sm outline-none"
                       style={{ color: '#0F0F0F', fontSize: '14px' }}
                     />
                     <button
@@ -143,9 +150,9 @@ export default function SignIn() {
                       className="flex-shrink-0"
                     >
                       {showPassword ? (
-                        <Eye className="w-6 h-6" style={{ color: '#6A6A6A' }} />
+                        <Eye className="h-6 w-6" style={{ color: '#6A6A6A' }} />
                       ) : (
-                        <EyeOff className="w-6 h-6" style={{ color: '#6A6A6A' }} />
+                        <EyeOff className="h-6 w-6" style={{ color: '#6A6A6A' }} />
                       )}
                     </button>
                   </div>
@@ -156,7 +163,7 @@ export default function SignIn() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl font-montserrat flex items-center justify-center gap-2 disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-2 rounded-xl font-montserrat disabled:opacity-70"
                 style={{
                   backgroundColor: '#0067DE',
                   height: '56px',
@@ -165,7 +172,7 @@ export default function SignIn() {
                   color: '#FEFEFE',
                 }}
               >
-                {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+                {loading && <Loader2 className="h-5 w-5 animate-spin" />}
                 {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </div>

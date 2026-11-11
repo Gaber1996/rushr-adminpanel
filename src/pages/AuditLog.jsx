@@ -21,7 +21,7 @@ function Legend() {
       className="inline-flex items-center gap-2 rounded-xl border p-2"
       style={{ backgroundColor: HIGH_IMPACT_BG, borderColor: HIGH_IMPACT_BORDER }}
     >
-      <Circle className="w-5 h-5 shrink-0" style={{ color: HIGH_IMPACT_BORDER }} />
+      <Circle className="h-5 w-5 shrink-0" style={{ color: HIGH_IMPACT_BORDER }} />
       <span
         className="font-montserrat font-medium text-[#0F0F0F]"
         style={{ fontSize: '16px', lineHeight: '16px' }}
@@ -122,7 +122,7 @@ export default function AuditLog() {
                 boxShadow: '0px 0px 0px 1px #E5E5E5, 0px 1px 3px 0px rgba(0,0,0,0.06)',
               }}
             >
-              <Search className="w-6 h-6 text-[#6A6A6A]" />
+              <Search className="h-6 w-6 text-[#6A6A6A]" />
               <input
                 type="text"
                 placeholder="Search"
@@ -131,7 +131,7 @@ export default function AuditLog() {
                   setSearch(e.target.value)
                   setPage(1)
                 }}
-                className="flex-1 outline-none bg-transparent font-montserrat text-sm text-[#0F0F0F] placeholder:text-[#6A6A6A]"
+                className="flex-1 bg-transparent font-montserrat text-sm text-[#0F0F0F] outline-none placeholder:text-[#6A6A6A]"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function AuditLog() {
                 className="flex items-center justify-center gap-2 rounded-xl border transition-colors hover:bg-[#ECF5FF]"
                 style={{ height: '56px', width: '157px', borderColor: '#0067DE' }}
               >
-                <SlidersHorizontal className="w-6 h-6" style={{ color: '#0052B0' }} />
+                <SlidersHorizontal className="h-6 w-6" style={{ color: '#0052B0' }} />
                 <span
                   className="font-montserrat font-bold"
                   style={{ fontSize: '18px', color: '#0052B0' }}
@@ -162,7 +162,7 @@ export default function AuditLog() {
                   }}
                 >
                   <span
-                    className="font-montserrat font-semibold text-[#6A6A6A] px-1"
+                    className="px-1 font-montserrat font-semibold text-[#6A6A6A]"
                     style={{ fontSize: '12px' }}
                   >
                     Module
@@ -182,7 +182,7 @@ export default function AuditLog() {
                         >
                           {name}
                         </span>
-                        {checked && <Check className="w-4 h-4 text-[#0067DE]" strokeWidth={3} />}
+                        {checked && <Check className="h-4 w-4 text-[#0067DE]" strokeWidth={3} />}
                       </button>
                     )
                   })}
@@ -203,7 +203,11 @@ export default function AuditLog() {
                       High-impact only
                     </span>
                     {highImpactOnly && (
-                      <Check className="w-4 h-4" style={{ color: HIGH_IMPACT_BORDER }} strokeWidth={3} />
+                      <Check
+                        className="h-4 w-4"
+                        style={{ color: HIGH_IMPACT_BORDER }}
+                        strokeWidth={3}
+                      />
                     )}
                   </button>
 
@@ -224,7 +228,7 @@ export default function AuditLog() {
 
           {/* Table */}
           <div
-            className="rounded-xl overflow-hidden bg-white"
+            className="overflow-hidden rounded-xl bg-white"
             style={{ boxShadow: '0px 0px 0px 1px #ECECEE, 0px 1px 3px 0px rgba(0,0,0,0.06)' }}
           >
             <table className="w-full" style={{ tableLayout: 'fixed' }}>
@@ -238,7 +242,7 @@ export default function AuditLog() {
                   {COLUMNS.map((col) => (
                     <th
                       key={col.key}
-                      className="font-montserrat font-medium text-[#0F0F0F] text-center"
+                      className="text-center font-montserrat font-medium text-[#0F0F0F]"
                       style={{
                         height: '48px',
                         backgroundColor: '#FAFAFA',
@@ -274,13 +278,22 @@ export default function AuditLog() {
                   }
                   return (
                     <tr key={log.id}>
-                      <td className="font-montserrat font-medium text-[#0F0F0F]" style={{ ...cellStyle, fontSize: '14px' }}>
+                      <td
+                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        style={{ ...cellStyle, fontSize: '14px' }}
+                      >
                         {log.timestamp}
                       </td>
-                      <td className="font-montserrat font-medium text-[#0F0F0F]" style={{ ...cellStyle, fontSize: '14px' }}>
+                      <td
+                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        style={{ ...cellStyle, fontSize: '14px' }}
+                      >
                         {log.actor}
                       </td>
-                      <td className="font-montserrat font-medium text-[#0F0F0F]" style={{ ...cellStyle, fontSize: '14px' }}>
+                      <td
+                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        style={{ ...cellStyle, fontSize: '14px' }}
+                      >
                         {log.module}
                       </td>
                       <td
@@ -296,7 +309,12 @@ export default function AuditLog() {
                       </td>
                       <td
                         className="font-montserrat font-medium text-[#0F0F0F]"
-                        style={{ ...cellStyle, fontSize: '12px', lineHeight: '1.4', padding: '8px 16px' }}
+                        style={{
+                          ...cellStyle,
+                          fontSize: '12px',
+                          lineHeight: '1.4',
+                          padding: '8px 16px',
+                        }}
                       >
                         {log.reason}
                       </td>
@@ -324,35 +342,49 @@ export default function AuditLog() {
             >
               {/* Per page selector */}
               <div
-                className="relative flex items-center rounded-lg overflow-visible"
-                style={{ height: '40px', border: '1px solid #D9D9D9', boxShadow: '0px 0.5px 2px 0px rgba(0,0,0,0.05)' }}
+                className="relative flex items-center overflow-visible rounded-lg"
+                style={{
+                  height: '40px',
+                  border: '1px solid #D9D9D9',
+                  boxShadow: '0px 0.5px 2px 0px rgba(0,0,0,0.05)',
+                }}
               >
                 <div
                   className="flex items-center justify-center"
-                  style={{ height: '100%', padding: '8px 13px 8px 12px', borderRight: '1px solid #D9D9D9' }}
+                  style={{
+                    height: '100%',
+                    padding: '8px 13px 8px 12px',
+                    borderRight: '1px solid #D9D9D9',
+                  }}
                 >
-                  <span className="font-montserrat font-semibold text-[#6A6A6A]" style={{ fontSize: '14px' }}>
+                  <span
+                    className="font-montserrat font-semibold text-[#6A6A6A]"
+                    style={{ fontSize: '14px' }}
+                  >
                     Per page
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setPerPageOpen((v) => !v)}
-                  className="flex items-center gap-1 justify-center"
+                  className="flex items-center justify-center gap-1"
                   style={{ height: '100%', padding: '8px 13px 8px 12px' }}
                 >
-                  <span className="font-montserrat font-medium text-[#0F0F0F]" style={{ fontSize: '14px' }}>
+                  <span
+                    className="font-montserrat font-medium text-[#0F0F0F]"
+                    style={{ fontSize: '14px' }}
+                  >
                     {perPage}
                   </span>
                   <ChevronDown
-                    className="w-5 h-5 text-[#6A6A6A] transition-transform"
+                    className="h-5 w-5 text-[#6A6A6A] transition-transform"
                     style={{ transform: perPageOpen ? 'rotate(180deg)' : 'none' }}
                   />
                 </button>
 
                 {perPageOpen && (
                   <div
-                    className="absolute right-0 bg-white rounded-lg overflow-hidden z-10"
+                    className="absolute right-0 z-10 overflow-hidden rounded-lg bg-white"
                     style={{
                       bottom: '44px',
                       border: '1px solid #D9D9D9',
@@ -364,8 +396,10 @@ export default function AuditLog() {
                       <button
                         key={opt}
                         onClick={() => changePerPage(opt)}
-                        className={`w-full text-left px-3 py-2 font-montserrat hover:bg-gray-50 ${
-                          opt === perPage ? 'text-[#0067DE] font-semibold' : 'text-[#0F0F0F] font-medium'
+                        className={`w-full px-3 py-2 text-left font-montserrat hover:bg-gray-50 ${
+                          opt === perPage
+                            ? 'font-semibold text-[#0067DE]'
+                            : 'font-medium text-[#0F0F0F]'
                         }`}
                         style={{ fontSize: '14px' }}
                       >
@@ -381,7 +415,7 @@ export default function AuditLog() {
                 type="button"
                 onClick={goPrev}
                 disabled={currentPage <= 1}
-                className="rounded-lg flex items-center justify-center font-montserrat font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center justify-center rounded-lg font-montserrat font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 style={{
                   height: '40px',
                   padding: '8px 16px',
@@ -396,7 +430,10 @@ export default function AuditLog() {
               </button>
 
               {/* Page indicator */}
-              <span className="font-montserrat font-medium text-[#6A6A6A]" style={{ fontSize: '14px' }}>
+              <span
+                className="font-montserrat font-medium text-[#6A6A6A]"
+                style={{ fontSize: '14px' }}
+              >
                 Page {currentPage} of {totalPages}
               </span>
 
@@ -405,7 +442,7 @@ export default function AuditLog() {
                 type="button"
                 onClick={goNext}
                 disabled={currentPage >= totalPages}
-                className="rounded-lg flex items-center justify-center font-montserrat font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center justify-center rounded-lg font-montserrat font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 style={{
                   height: '40px',
                   padding: '8px 16px',

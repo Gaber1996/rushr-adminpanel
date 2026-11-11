@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://rusher-back-end-1.onrender.com';
+export const BASE_URL = 'https://rusher-back-end-1.onrender.com'
 
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token')

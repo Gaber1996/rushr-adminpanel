@@ -49,11 +49,11 @@ function StatusBadge({ status }) {
   const style = getStatusStyle(status)
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-montserrat font-medium"
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-montserrat text-xs font-medium"
       style={{ backgroundColor: style.bg, color: style.text, border: `1px solid ${style.border}` }}
     >
       <span
-        className="w-3 h-3 rounded-full flex items-center justify-center text-white"
+        className="flex h-3 w-3 items-center justify-center rounded-full text-white"
         style={{ backgroundColor: style.dot, fontSize: '8px' }}
       >
         {status === 'APPROVED' ? '✓' : status === 'REJECTED' || status === 'EXPIRED' ? '✕' : '◷'}
@@ -107,16 +107,27 @@ export default function ProVerification() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-4">
-          <h1 className="font-montserrat font-extrabold text-[#202020]" style={{ fontSize: '40px', lineHeight: '40px' }}>
+          <h1
+            className="font-montserrat font-extrabold text-[#202020]"
+            style={{ fontSize: '40px', lineHeight: '40px' }}
+          >
             Pro Verification
           </h1>
-          <p className="font-montserrat font-semibold text-[#6A6A6A]" style={{ fontSize: '24px', lineHeight: '24px' }}>
+          <p
+            className="font-montserrat font-semibold text-[#6A6A6A]"
+            style={{ fontSize: '24px', lineHeight: '24px' }}
+          >
             Review and approve pro verification documents.
           </p>
         </div>
         <button
           className="flex items-center justify-center rounded-xl font-montserrat font-extrabold text-white"
-          style={{ backgroundColor: '#0067DE', height: '56px', padding: '8px 32px', fontSize: '18px' }}
+          style={{
+            backgroundColor: '#0067DE',
+            height: '56px',
+            padding: '8px 32px',
+            fontSize: '18px',
+          }}
         >
           Export Report
         </button>
@@ -125,23 +136,23 @@ export default function ProVerification() {
       {/* Search & Filter */}
       <div className="flex items-center gap-6">
         <div
-          className="flex-1 flex items-center gap-2 rounded-xl border px-3"
+          className="flex flex-1 items-center gap-2 rounded-xl border px-3"
           style={{ borderColor: '#D9D9D9', height: '56px', backgroundColor: '#FEFEFE' }}
         >
-          <Search className="w-6 h-6 text-[#6A6A6A]" />
+          <Search className="h-6 w-6 text-[#6A6A6A]" />
           <input
             type="text"
             placeholder="Search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 outline-none bg-transparent font-montserrat text-sm text-[#0F0F0F] placeholder:text-[#6A6A6A]"
+            className="flex-1 bg-transparent font-montserrat text-sm text-[#0F0F0F] outline-none placeholder:text-[#6A6A6A]"
           />
         </div>
         <button
           className="flex items-center gap-2 rounded-xl border px-4 font-montserrat font-semibold"
           style={{ borderColor: '#D9D9D9', height: '56px', fontSize: '16px', color: '#0067DE' }}
         >
-          <SlidersHorizontal className="w-5 h-5" />
+          <SlidersHorizontal className="h-5 w-5" />
           Filter
         </button>
       </div>
@@ -149,40 +160,56 @@ export default function ProVerification() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#0067DE]" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#0067DE]" />
         </div>
       ) : error ? (
-        <div className="px-4 py-3 rounded-xl text-sm font-montserrat font-medium" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+        <div
+          className="rounded-xl px-4 py-3 font-montserrat text-sm font-medium"
+          style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
+        >
           {error}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-4 py-4 font-montserrat font-semibold text-sm text-[#6A6A6A]">
-                  <span className="flex items-center gap-1">Name <ChevronDown className="w-4 h-4" /></span>
+                <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                  <span className="flex items-center gap-1">
+                    Name <ChevronDown className="h-4 w-4" />
+                  </span>
                 </th>
-                <th className="text-left px-4 py-4 font-montserrat font-semibold text-sm text-[#6A6A6A]">
-                  <span className="flex items-center gap-1">Government ID <ChevronDown className="w-4 h-4" /></span>
+                <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                  <span className="flex items-center gap-1">
+                    Government ID <ChevronDown className="h-4 w-4" />
+                  </span>
                 </th>
-                <th className="text-left px-4 py-4 font-montserrat font-semibold text-sm text-[#6A6A6A]">
-                  <span className="flex items-center gap-1">Professional License <ChevronDown className="w-4 h-4" /></span>
+                <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                  <span className="flex items-center gap-1">
+                    Professional License <ChevronDown className="h-4 w-4" />
+                  </span>
                 </th>
-                <th className="text-left px-4 py-4 font-montserrat font-semibold text-sm text-[#6A6A6A]">
-                  <span className="flex items-center gap-1">Business Insurance <ChevronDown className="w-4 h-4" /></span>
+                <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                  <span className="flex items-center gap-1">
+                    Business Insurance <ChevronDown className="h-4 w-4" />
+                  </span>
                 </th>
-                <th className="text-left px-4 py-4 font-montserrat font-semibold text-sm text-[#6A6A6A]">
+                <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
                   Submitted
                 </th>
-                <th className="text-left px-4 py-4 font-montserrat font-semibold text-sm text-[#6A6A6A]">
-                  <span className="flex items-center gap-1">Action <ChevronDown className="w-4 h-4" /></span>
+                <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                  <span className="flex items-center gap-1">
+                    Action <ChevronDown className="h-4 w-4" />
+                  </span>
                 </th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((item) => (
-                <tr key={item.contractorId} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                <tr
+                  key={item.contractorId}
+                  className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"
+                >
                   <td className="px-4 py-4 font-montserrat text-sm text-[#202020]">
                     {item.firstName} {item.lastName}
                   </td>
@@ -201,9 +228,9 @@ export default function ProVerification() {
                   <td className="px-4 py-4">
                     <button
                       onClick={() => navigate(`/pro-verification/${item.contractorId}`)}
-                      className="flex items-center gap-1.5 font-montserrat text-sm text-[#6A6A6A] hover:text-[#0067DE] transition-colors"
+                      className="flex items-center gap-1.5 font-montserrat text-sm text-[#6A6A6A] transition-colors hover:text-[#0067DE]"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="h-4 w-4" />
                       Review
                     </button>
                   </td>
@@ -211,7 +238,10 @@ export default function ProVerification() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center font-montserrat text-sm text-[#6A6A6A]">
+                  <td
+                    colSpan={6}
+                    className="px-4 py-10 text-center font-montserrat text-sm text-[#6A6A6A]"
+                  >
                     No results found.
                   </td>
                 </tr>
@@ -220,14 +250,17 @@ export default function ProVerification() {
           </table>
 
           {/* Footer / Pagination */}
-          <div className="flex items-center justify-center gap-4 px-4 py-4 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-4 border-t border-gray-100 px-4 py-4">
             <span className="font-montserrat text-sm text-[#6A6A6A]">Per page</span>
-            <div className="flex items-center gap-1 border rounded-lg px-3 py-1.5" style={{ borderColor: '#D9D9D9' }}>
+            <div
+              className="flex items-center gap-1 rounded-lg border px-3 py-1.5"
+              style={{ borderColor: '#D9D9D9' }}
+            >
               <span className="font-montserrat text-sm">5</span>
-              <ChevronDown className="w-4 h-4 text-[#6A6A6A]" />
+              <ChevronDown className="h-4 w-4 text-[#6A6A6A]" />
             </div>
             <button
-              className="px-4 py-2 rounded-lg border font-montserrat text-sm font-medium"
+              className="rounded-lg border px-4 py-2 font-montserrat text-sm font-medium"
               style={{ borderColor: '#D9D9D9', color: '#6A6A6A' }}
             >
               Next

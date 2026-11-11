@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       fontFamily: {
@@ -22,7 +19,7 @@ module.exports = {
         },
       },
       borderRadius: {
-        'xl': '12px',
+        xl: '12px',
         '2xl': '16px',
         '3xl': '44px',
       },
