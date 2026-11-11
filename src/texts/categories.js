@@ -6,6 +6,8 @@ export const CATEGORIES_TEXT = {
   subtitle: 'Manage all your platform setting',
   addCategory: 'Add New Category',
   loadError: 'Failed to load categories.',
+  // Screen readers only, while the skeleton rows show.
+  loading: 'Loading categories…',
 
   // Tabs
   tabs: {

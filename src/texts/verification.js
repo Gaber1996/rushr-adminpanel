@@ -22,6 +22,8 @@ export const VERIFICATION_TEXT = {
     subtitle: 'Review and approve pro verification documents.',
     exportReport: 'Export Report',
     loadError: 'Failed to load verification data.',
+    // Screen readers only, while the skeleton rows show.
+    loading: 'Loading verification queue…',
     nameColumn: 'Name',
     submittedColumn: 'Submitted',
   },

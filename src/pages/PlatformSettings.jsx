@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { SlidersHorizontal, Plus, Trash2, ChevronDown, Loader2 } from 'lucide-react'
+import { SlidersHorizontal, Plus, Trash2 } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
 import { ENDPOINTS } from '../config/endpoints'
 import { formatDate } from '../utils/format'
 import Button from '../components/ui/Button'
+import DataTable from '../components/ui/DataTable'
 import ErrorState from '../components/ui/ErrorState'
+import { PaginationPlaceholder } from '../components/ui/Pagination'
 import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
 import CategoryDialog from '../features/categories/CategoryDialog'
@@ -143,6 +145,52 @@ export default function PlatformSettings() {
     { key: 'cancellation', label: TEXT.tabs.cancellation },
   ]
 
+  const columns = [
+    {
+      key: 'name',
+      header: TEXT.nameColumn,
+      sortIndicator: true,
+      cellClassName: 'text-sm text-heading',
+      render: (cat) => cat.name,
+    },
+    {
+      key: 'issueTypes',
+      header: TEXT.issueTypesColumn,
+      sortIndicator: true,
+      cellClassName: 'max-w-[350px] truncate text-sm text-muted',
+      render: (cat) => (cat.issueTypes || []).join(', '),
+    },
+    {
+      key: 'updated',
+      header: TEXT.lastUpdateColumn,
+      cellClassName: 'text-sm text-muted',
+      render: (cat) => formatDate(cat.updatedAt),
+    },
+    {
+      key: 'actions',
+      header: TEXT.actionsColumn,
+      cardLabel: null,
+      render: (cat) => (
+        <div className="flex items-center gap-5">
+          <button
+            onClick={() => setEditingCategory(cat)}
+            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+          >
+            <EditIcon />
+            {TEXT.edit}
+          </button>
+          <button
+            onClick={() => setDeletingCategory(cat)}
+            className="flex items-center gap-1.5 text-sm text-danger hover:underline"
+          >
+            <Trash2 className="h-4 w-4" />
+            {TEXT.delete}
+          </button>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
@@ -190,95 +238,18 @@ export default function PlatformSettings() {
             </Button>
           </div>
 
-          {/* Table */}
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : error ? (
+          {error ? (
             <ErrorState message={error} />
           ) : (
-            <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
-                      <span className="flex items-center gap-1">
-                        {TEXT.nameColumn} <ChevronDown className="h-4 w-4" />
-                      </span>
-                    </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
-                      <span className="flex items-center gap-1">
-                        {TEXT.issueTypesColumn} <ChevronDown className="h-4 w-4" />
-                      </span>
-                    </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
-                      {TEXT.lastUpdateColumn}
-                    </th>
-                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
-                      {TEXT.actionsColumn}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((cat) => (
-                    <tr
-                      key={cat.id}
-                      className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"
-                    >
-                      <td className="px-4 py-4 text-sm text-heading">{cat.name}</td>
-                      <td className="max-w-[350px] truncate px-4 py-4 text-sm text-muted">
-                        {(cat.issueTypes || []).join(', ')}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-muted">{formatDate(cat.updatedAt)}</td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-5">
-                          <button
-                            onClick={() => setEditingCategory(cat)}
-                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
-                          >
-                            <EditIcon />
-                            {TEXT.edit}
-                          </button>
-                          <button
-                            onClick={() => setDeletingCategory(cat)}
-                            className="flex items-center gap-1.5 text-sm text-danger hover:underline"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            {TEXT.delete}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted">
-                        {TEXT.empty}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-
-              {/* Footer / Pagination */}
-              <div className="flex items-center justify-center gap-4 border-t border-gray-100 px-4 py-4">
-                <span className="text-sm text-muted">{COMMON_TEXT.perPage}</span>
-                <div
-                  className="flex items-center gap-1 rounded-lg border px-3 py-1.5"
-                  style={{ borderColor: '#D9D9D9' }}
-                >
-                  <span className="text-sm">5</span>
-                  <ChevronDown className="h-4 w-4 text-muted" />
-                </div>
-                <button
-                  className="rounded-lg border px-4 py-2 text-sm font-medium"
-                  style={{ borderColor: '#D9D9D9', color: '#6A6A6A' }}
-                >
-                  {COMMON_TEXT.next}
-                </button>
-              </div>
-            </div>
+            <DataTable
+              columns={columns}
+              rows={filtered}
+              rowKey={(cat) => cat.id}
+              loading={loading}
+              loadingLabel={TEXT.loading}
+              emptyMessage={TEXT.empty}
+              footer={<PaginationPlaceholder />}
+            />
           )}
         </>
       ) : (

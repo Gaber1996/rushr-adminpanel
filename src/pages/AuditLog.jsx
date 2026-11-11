@@ -1,7 +1,10 @@
 import { useState, useMemo } from 'react'
-import { SlidersHorizontal, Circle, ChevronDown, Check } from 'lucide-react'
+import { SlidersHorizontal, Circle, Check } from 'lucide-react'
 import { AUDIT_LOGS, AUDIT_MODULES } from '../data/auditLogs'
+import DataTable from '../components/ui/DataTable'
 import PageHeader from '../components/ui/PageHeader'
+import Pagination from '../components/ui/Pagination'
+import { useClientPagination } from '../hooks/useClientPagination'
 import SearchInput from '../components/ui/SearchInput'
 import { AUDIT_LOG_TEXT, COMMON_TEXT } from '../texts'
 
@@ -13,11 +16,21 @@ const HIGH_IMPACT_BG = '#FFF7F7'
 const HIGH_IMPACT_BORDER = '#C20A0A'
 
 const COLUMNS = [
-  { key: 'timestamp', label: TEXT.columns.timestamp, width: '153px' },
-  { key: 'actor', label: TEXT.columns.actor, width: '164px' },
-  { key: 'module', label: TEXT.columns.module, width: '198px' },
-  { key: 'action', label: TEXT.columns.action },
-  { key: 'reason', label: COMMON_TEXT.reason, width: '311px' },
+  { key: 'timestamp', header: TEXT.columns.timestamp, width: '153px' },
+  { key: 'actor', header: TEXT.columns.actor, width: '164px' },
+  { key: 'module', header: TEXT.columns.module, width: '198px' },
+  {
+    key: 'action',
+    header: TEXT.columns.action,
+    cellClassName: (log) =>
+      `px-4 text-center text-[14px] font-medium leading-[1.4] ${log.highImpact ? 'text-danger' : 'text-ink'}`,
+  },
+  {
+    key: 'reason',
+    header: COMMON_TEXT.reason,
+    width: '311px',
+    cellClassName: 'px-4 py-2 text-center text-[12px] font-medium leading-[1.4] text-ink',
+  },
 ]
 
 function Legend() {
@@ -36,9 +49,6 @@ function Legend() {
 
 export default function AuditLog() {
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [perPage, setPerPage] = useState(10)
-  const [perPageOpen, setPerPageOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [moduleFilter, setModuleFilter] = useState([])
   const [highImpactOnly, setHighImpactOnly] = useState(false)
@@ -59,38 +69,24 @@ export default function AuditLog() {
     })
   }, [search, moduleFilter, highImpactOnly])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage))
-  const currentPage = Math.min(page, totalPages)
-  const startIndex = (currentPage - 1) * perPage
-  const pageRows = filtered.slice(startIndex, startIndex + perPage)
+  const { page, totalPages, perPage, pageItems, setPage, setPerPage, resetPage } =
+    useClientPagination(filtered, 10)
   const activeFilterCount = moduleFilter.length + (highImpactOnly ? 1 : 0)
-
-  function changePerPage(value) {
-    setPerPage(value)
-    setPage(1)
-    setPerPageOpen(false)
-  }
 
   function toggleModule(name) {
     setModuleFilter((prev) =>
       prev.includes(name) ? prev.filter((m) => m !== name) : [...prev, name]
     )
-    setPage(1)
+    resetPage()
   }
 
   function clearFilters() {
     setModuleFilter([])
     setHighImpactOnly(false)
-    setPage(1)
+    resetPage()
   }
 
-  function goPrev() {
-    if (currentPage > 1) setPage(currentPage - 1)
-  }
-
-  function goNext() {
-    if (currentPage < totalPages) setPage(currentPage + 1)
-  }
+  const columns = COLUMNS.map((col) => ({ ...col, render: (log) => log[col.key] }))
 
   return (
     <div className="flex flex-col gap-6">
@@ -111,7 +107,7 @@ export default function AuditLog() {
               value={search}
               onChange={(value) => {
                 setSearch(value)
-                setPage(1)
+                resetPage()
               }}
               appearance="elevated"
               className="flex-1"
@@ -167,7 +163,7 @@ export default function AuditLog() {
                     type="button"
                     onClick={() => {
                       setHighImpactOnly((v) => !v)
-                      setPage(1)
+                      resetPage()
                     }}
                     className="flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-left hover:bg-gray-50"
                     style={{ borderTop: '1px solid #D9D9D9' }}
@@ -202,226 +198,24 @@ export default function AuditLog() {
             </div>
           </div>
 
-          {/* Table */}
-          <div
-            className="overflow-hidden rounded-xl bg-white"
-            style={{ boxShadow: '0px 0px 0px 1px #ECECEE, 0px 1px 3px 0px rgba(0,0,0,0.06)' }}
-          >
-            <table className="w-full" style={{ tableLayout: 'fixed' }}>
-              <colgroup>
-                {COLUMNS.map((col) => (
-                  <col key={col.key} style={col.width ? { width: col.width } : undefined} />
-                ))}
-              </colgroup>
-              <thead>
-                <tr>
-                  {COLUMNS.map((col) => (
-                    <th
-                      key={col.key}
-                      className="text-center font-medium text-ink"
-                      style={{
-                        height: '48px',
-                        backgroundColor: '#FAFAFA',
-                        // Shared edge with the first row — red when that row is high-impact.
-                        borderBottom: `1px solid ${pageRows[0]?.highImpact ? HIGH_IMPACT_BORDER : '#D9D9D9'}`,
-                        fontSize: '16px',
-                        padding: '0 16px',
-                      }}
-                    >
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {pageRows.map((log, idx) => {
-                  const zebra = idx % 2 === 1 ? '#FAFAFA' : '#FEFEFE'
-                  // Borders collapse, so each edge is drawn once by the row above it.
-                  // An edge is red when either of the rows it separates is high-impact —
-                  // that gives the red row a red rule on both its top and its bottom.
-                  const nextIsHighImpact = pageRows[idx + 1]?.highImpact
-                  const rowStyle = {
-                    backgroundColor: log.highImpact ? HIGH_IMPACT_BG : zebra,
-                    borderBottom: `1px solid ${
-                      log.highImpact || nextIsHighImpact ? HIGH_IMPACT_BORDER : '#D9D9D9'
-                    }`,
-                  }
-                  const cellStyle = {
-                    height: '56px',
-                    padding: '0 16px',
-                    textAlign: 'center',
-                    ...rowStyle,
-                  }
-                  return (
-                    <tr key={log.id}>
-                      <td
-                        className="font-medium text-ink"
-                        style={{ ...cellStyle, fontSize: '14px' }}
-                      >
-                        {log.timestamp}
-                      </td>
-                      <td
-                        className="font-medium text-ink"
-                        style={{ ...cellStyle, fontSize: '14px' }}
-                      >
-                        {log.actor}
-                      </td>
-                      <td
-                        className="font-medium text-ink"
-                        style={{ ...cellStyle, fontSize: '14px' }}
-                      >
-                        {log.module}
-                      </td>
-                      <td
-                        className="font-medium"
-                        style={{
-                          ...cellStyle,
-                          fontSize: '14px',
-                          lineHeight: '1.4',
-                          color: log.highImpact ? HIGH_IMPACT_BORDER : '#0F0F0F',
-                        }}
-                      >
-                        {log.action}
-                      </td>
-                      <td
-                        className="font-medium text-ink"
-                        style={{
-                          ...cellStyle,
-                          fontSize: '12px',
-                          lineHeight: '1.4',
-                          padding: '8px 16px',
-                        }}
-                      >
-                        {log.reason}
-                      </td>
-                    </tr>
-                  )
-                })}
-                {pageRows.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={COLUMNS.length}
-                      className="px-4 py-10 text-center text-sm text-muted"
-                      style={{ borderBottom: '1px solid #D9D9D9' }}
-                    >
-                      {COMMON_TEXT.noResults}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-
-            {/* Pagination footer */}
-            <div
-              className="flex items-center justify-center gap-4"
-              style={{ height: '60px', padding: '0 16px', backgroundColor: '#FEFEFE' }}
-            >
-              {/* Per page selector */}
-              <div
-                className="relative flex items-center overflow-visible rounded-lg"
-                style={{
-                  height: '40px',
-                  border: '1px solid #D9D9D9',
-                  boxShadow: '0px 0.5px 2px 0px rgba(0,0,0,0.05)',
-                }}
-              >
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    height: '100%',
-                    padding: '8px 13px 8px 12px',
-                    borderRight: '1px solid #D9D9D9',
-                  }}
-                >
-                  <span className="font-semibold text-muted" style={{ fontSize: '14px' }}>
-                    {COMMON_TEXT.perPage}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setPerPageOpen((v) => !v)}
-                  className="flex items-center justify-center gap-1"
-                  style={{ height: '100%', padding: '8px 13px 8px 12px' }}
-                >
-                  <span className="font-medium text-ink" style={{ fontSize: '14px' }}>
-                    {perPage}
-                  </span>
-                  <ChevronDown
-                    className="h-5 w-5 text-muted transition-transform"
-                    style={{ transform: perPageOpen ? 'rotate(180deg)' : 'none' }}
-                  />
-                </button>
-
-                {perPageOpen && (
-                  <div
-                    className="absolute right-0 z-10 overflow-hidden rounded-lg bg-white"
-                    style={{
-                      bottom: '44px',
-                      border: '1px solid #D9D9D9',
-                      boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.08)',
-                      minWidth: '80px',
-                    }}
-                  >
-                    {PER_PAGE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => changePerPage(opt)}
-                        className={`w-full px-3 py-2 text-left hover:bg-gray-50 ${
-                          opt === perPage ? 'font-semibold text-primary' : 'font-medium text-ink'
-                        }`}
-                        style={{ fontSize: '14px' }}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Prev */}
-              <button
-                type="button"
-                onClick={goPrev}
-                disabled={currentPage <= 1}
-                className="flex items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  height: '40px',
-                  padding: '8px 16px',
-                  border: '1px solid #D9D9D9',
-                  backgroundColor: '#FEFEFE',
-                  color: '#0052B0',
-                  fontSize: '14px',
-                  boxShadow: '0px 0.5px 1px 0px rgba(0,0,0,0.05)',
-                }}
-              >
-                {COMMON_TEXT.prev}
-              </button>
-
-              {/* Page indicator */}
-              <span className="font-medium text-muted" style={{ fontSize: '14px' }}>
-                {COMMON_TEXT.pageOf(currentPage, totalPages)}
-              </span>
-
-              {/* Next */}
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={currentPage >= totalPages}
-                className="flex items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  height: '40px',
-                  padding: '8px 16px',
-                  border: '1px solid #D9D9D9',
-                  backgroundColor: '#FEFEFE',
-                  color: '#0052B0',
-                  fontSize: '14px',
-                  boxShadow: '0px 0.5px 1px 0px rgba(0,0,0,0.05)',
-                }}
-              >
-                {COMMON_TEXT.next}
-              </button>
-            </div>
-          </div>
+          <DataTable
+            variant="grid"
+            columns={columns}
+            rows={pageItems}
+            rowKey={(log) => log.id}
+            cellClassName="px-4 text-center text-[14px] font-medium text-ink"
+            isHighlighted={(log) => log.highImpact}
+            footer={
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                perPage={perPage}
+                perPageOptions={PER_PAGE_OPTIONS}
+                onPageChange={setPage}
+                onPerPageChange={setPerPage}
+              />
+            }
+          />
         </div>
       </div>
     </div>
