@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Loader2,
 } from 'lucide-react'
-import { apiRequest, BASE_URL } from '../config/api'
+import { apiRequest } from '../config/api'
+import { getDocumentFileUrl } from '../utils/documentFile'
 import { useApiResource } from '../hooks/useApiResource'
 import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
@@ -74,7 +75,7 @@ const OUTCOME_BY_ACTION = {
 function mediaUrl(filePath) {
   if (!filePath) return null
   if (/^https?:\/\//i.test(filePath)) return filePath
-  return `${BASE_URL}${ENDPOINTS.file(filePath)}`
+  return getDocumentFileUrl(filePath)
 }
 
 /** The backend measures the arrival gap in km; the design states it in miles. */
