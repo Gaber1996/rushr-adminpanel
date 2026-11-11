@@ -1,329 +1,43 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  User,
-  Briefcase,
-  AlertCircle,
-  Clock,
-  MapPin,
-  CreditCard,
-  Plus,
-  Minus,
-  ArrowLeft,
-  Loader2,
-} from 'lucide-react'
+import { User, Briefcase, AlertCircle, Clock, MapPin, CreditCard } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { getDocumentFileUrl } from '../utils/documentFile'
 import { useApiResource } from '../hooks/useApiResource'
 import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
 import Button from '../components/ui/Button'
-import Modal from '../components/ui/Modal'
 import Skeleton from '../components/ui/Skeleton'
 import DisputeDetailsSkeleton, {
   DisputeStatusSkeleton,
 } from '../features/disputes/DisputeDetailsSkeleton'
 import PageHeader from '../components/ui/PageHeader'
 import DisputeStatusBadge, { isResolvedStatus } from '../features/disputes/DisputeStatusBadge'
+import {
+  ACTION_BY_OUTCOME,
+  OUTCOME_BY_ACTION,
+  buildActions,
+  CUSTOM_SPLIT,
+} from '../features/disputes/disputeActions'
+import { distanceLine, placeLine } from '../features/disputes/eventLines'
+import CollapsibleCard, { InfoLine } from '../features/disputes/CollapsibleCard'
+import Timeline from '../features/disputes/Timeline'
+import LocationItem from '../features/disputes/LocationItem'
+import PaymentRow from '../features/disputes/PaymentRow'
+import SuccessModal from '../features/disputes/SuccessModal'
+import BackLink from '../components/ui/BackLink'
+import ResolutionPanel from '../features/disputes/ResolutionPanel'
 import { formatDateTime, formatTime, parseDate } from '../utils/format'
 import { centsToMoney, formatMoney, moneyToCents } from '../utils/money'
 import { COMMON_TEXT, DISPUTES_TEXT } from '../texts'
 
 const TEXT = DISPUTES_TEXT.details
 
-// `total` is what the customer paid; `proNet` is what the pro would actually receive once the
-// platform's cut is taken — 12%, or 7% for a Pro+ pro — so the copy states the real figures.
-function buildActions(total, proNet) {
-  return [
-    {
-      key: 'FULL_REFUND',
-      title: TEXT.fullRefundTitle,
-      subtitle: TEXT.fullRefundSubtitle(total),
-      selectedBg: '#FFF7F7',
-      selectedBorder: '#C20A0A',
-    },
-    {
-      key: 'PARTIAL_REFUND',
-      title: TEXT.partialRefundTitle,
-      subtitle: TEXT.partialRefundSubtitle,
-      selectedBg: '#FFFAEC',
-      selectedBorder: '#FFC107',
-    },
-    {
-      key: 'RELEASE_PAYMENT',
-      title: TEXT.releasePaymentTitle,
-      subtitle: TEXT.releasePaymentSubtitle(proNet),
-      selectedBg: '#EFFFF5',
-      selectedBorder: '#00861D',
-    },
-    {
-      key: 'CUSTOM_SPLIT',
-      title: TEXT.customSplitTitle,
-      selectedBg: '#F4F9FF',
-      selectedBorder: '#438DE1',
-    },
-  ]
-}
-
-// One card per API outcome. SPLIT is the even half-and-half the platform works out itself;
-// CUSTOM_SPLIT is the one where the admin types both amounts.
-const ACTION_BY_OUTCOME = {
-  FULL_REFUND: 'FULL_REFUND',
-  RELEASE_TO_PRO: 'RELEASE_PAYMENT',
-  SPLIT: 'PARTIAL_REFUND',
-  CUSTOM_SPLIT: 'CUSTOM_SPLIT',
-}
-
-const OUTCOME_BY_ACTION = {
-  FULL_REFUND: 'FULL_REFUND',
-  PARTIAL_REFUND: 'SPLIT',
-  RELEASE_PAYMENT: 'RELEASE_TO_PRO',
-  CUSTOM_SPLIT: 'CUSTOM_SPLIT',
-}
-
 /** Media comes back as a storage key ("uploads/<file>"), served from /api/files. */
 function mediaUrl(filePath) {
   if (!filePath) return null
   if (/^https?:\/\//i.test(filePath)) return filePath
   return getDocumentFileUrl(filePath)
-}
-
-/** The backend measures the arrival gap in km; the design states it in miles. */
-function distanceLine(event) {
-  if (event.distanceKm != null) {
-    return TEXT.milesFromCustomer((event.distanceKm * 0.621371).toFixed(1))
-  }
-  return event.note || TEXT.defaultDistance
-}
-
-/**
- * Where the pro actually was. The API resolves the recorded coordinates to a street address;
- * the raw fix is the fallback for a point it could not name.
- */
-function placeLine(event) {
-  if (event.address) return event.address
-  if (event.latitude == null || event.longitude == null) return null
-  return `${Number(event.latitude).toFixed(4)}, ${Number(event.longitude).toFixed(4)}`
-}
-
-function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div className="flex flex-col gap-4 rounded-3xl bg-[#F6F6F6] px-4 py-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon}
-          <h3 className="font-bold text-ink" style={{ fontSize: '20px', lineHeight: '20px' }}>
-            {title}
-          </h3>
-        </div>
-        <div
-          className="flex flex-col overflow-hidden rounded-lg border border-line bg-white"
-          style={{ width: '32px' }}
-        >
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="flex items-center justify-center hover:bg-gray-50"
-            style={{ height: '32px', borderBottom: '1px solid #D9D9D9' }}
-            aria-label={TEXT.expand}
-          >
-            <Plus className="h-4 w-4 text-ink" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="flex items-center justify-center hover:bg-gray-50"
-            style={{ height: '32px' }}
-            aria-label={TEXT.collapse}
-          >
-            <Minus className="h-4 w-4 text-ink" />
-          </button>
-        </div>
-      </div>
-      {open && children}
-    </div>
-  )
-}
-
-function InfoLine({ children }) {
-  return (
-    <p className="font-semibold text-ink" style={{ fontSize: '16px', lineHeight: '20px' }}>
-      {children}
-    </p>
-  )
-}
-
-function Timeline({ steps }) {
-  return (
-    <div className="flex w-full items-start">
-      {steps.map((step, idx) => {
-        const isLast = idx === steps.length - 1
-        return (
-          <div key={step.label + idx} className="flex flex-1 flex-col gap-2">
-            <div className="flex items-center">
-              <div
-                className="flex shrink-0 items-center justify-center rounded-full border-2 bg-white"
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  borderColor: step.recorded ? '#0067DE' : '#D9D9D9',
-                }}
-              >
-                <span
-                  className="block rounded-full"
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: step.recorded ? '#0067DE' : '#D9D9D9',
-                  }}
-                />
-              </div>
-              {!isLast && <div className="h-px flex-1" style={{ backgroundColor: '#D9D9D9' }} />}
-            </div>
-            <div className="flex flex-col gap-2 pr-2">
-              <span
-                className="font-medium text-muted"
-                style={{ fontSize: '12px', lineHeight: '12px' }}
-              >
-                {step.label}
-              </span>
-              <span
-                className="font-bold"
-                style={{
-                  fontSize: '14px',
-                  lineHeight: '14px',
-                  color: step.recorded ? '#0F0F0F' : '#6A6A6A',
-                }}
-              >
-                {step.time}
-              </span>
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-function LocationItem({ item, isLast }) {
-  const titleColor = item.highlighted ? '#0052B0' : '#0F0F0F'
-  return (
-    <div className="flex items-start gap-1">
-      <div className="flex flex-col items-center" style={{ width: '24px' }}>
-        <MapPin
-          className="h-6 w-6"
-          style={{ color: item.highlighted ? '#0052B0' : '#0F0F0F' }}
-          fill={item.highlighted ? '#0052B0' : 'none'}
-        />
-        {!isLast && (
-          <div
-            className="mt-2 w-px flex-1"
-            style={{ backgroundColor: '#D9D9D9', minHeight: '40px' }}
-          />
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-2 pb-4">
-        <p
-          className="font-medium"
-          style={{ fontSize: '20px', lineHeight: '20px', color: titleColor }}
-        >
-          {item.title}
-        </p>
-        <p className="font-semibold text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
-          {item.subtitle}
-        </p>
-        <p className="font-semibold text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
-          {item.address}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-const SUCCESS_TITLE_ID = 'dispute-success-title'
-
-/** "Decision recorded" confirmation; closes itself after `autoDismissMs`. */
-function SuccessModal({ open, onClose, autoDismissMs = 2500 }) {
-  useEffect(() => {
-    if (!open) return
-    const timer = setTimeout(onClose, autoDismissMs)
-    return () => clearTimeout(timer)
-  }, [open, onClose, autoDismissMs])
-
-  return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      labelledBy={SUCCESS_TITLE_ID}
-      backdropClassName="backdrop:bg-black/50"
-      className="w-[780px] rounded-[24px] bg-white"
-    >
-      <div className="flex flex-col items-center px-6 py-10 sm:px-10 sm:py-12">
-        <svg
-          viewBox="0 0 160 160"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          className="h-28 w-28 sm:h-40 sm:w-40"
-        >
-          <circle cx="80" cy="80" r="68" stroke="#00861D" strokeWidth="10" fill="none" />
-          <path
-            d="M48 84 L70 106 L114 56"
-            stroke="#00861D"
-            strokeWidth="14"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
-        <h3
-          id={SUCCESS_TITLE_ID}
-          className="mt-8 text-center text-2xl font-extrabold leading-[1.2] text-ink sm:text-[32px]"
-        >
-          {TEXT.successTitle}
-        </h3>
-        <p
-          className="mt-4 max-w-[600px] text-center font-medium text-muted"
-          style={{ fontSize: '18px', lineHeight: '1.5' }}
-        >
-          {TEXT.successMessage}
-        </p>
-      </div>
-    </Modal>
-  )
-}
-
-function PaymentRow({ label, value, isBlue, isLast }) {
-  return (
-    <div
-      className="flex items-center justify-between py-2"
-      style={!isLast ? { borderBottom: '1px solid #D9D9D9' } : undefined}
-    >
-      <span className="font-medium text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
-        {label}
-      </span>
-      {typeof value === 'string' ? (
-        <span
-          className="text-right font-bold"
-          style={{ fontSize: '16px', lineHeight: '16px', color: isBlue ? '#0052B0' : '#0F0F0F' }}
-        >
-          {value}
-        </span>
-      ) : (
-        value
-      )}
-    </div>
-  )
-}
-
-function BackLink({ onClick }) {
-  return (
-    <button onClick={onClick} className="inline-flex items-center gap-2 font-semibold text-primary">
-      <ArrowLeft className="h-5 w-5" />
-      {COMMON_TEXT.back}
-    </button>
-  )
 }
 
 export default function DisputeDetails() {
@@ -466,7 +180,7 @@ export default function DisputeDetails() {
       (proCents != null && proCents > totalPaidCents))
 
   let splitError = null
-  if (outcome === 'CUSTOM_SPLIT') {
+  if (outcome === CUSTOM_SPLIT) {
     if (overTotal) splitError = TEXT.splitOverTotal(totalPaid)
     else if (consumerCents != null && proCents != null && !splitBalanced) {
       splitError = TEXT.splitUnbalanced(totalPaid)
@@ -487,7 +201,7 @@ export default function DisputeDetails() {
   const canConfirm =
     !!outcome &&
     adminNote.trim().length > 0 &&
-    (outcome !== 'CUSTOM_SPLIT' || splitBalanced) &&
+    (outcome !== CUSTOM_SPLIT || splitBalanced) &&
     !submitting
 
   async function confirmDecision() {
@@ -495,7 +209,7 @@ export default function DisputeDetails() {
     setSubmitError(null)
     const body = { outcome, reason: adminNote.trim() }
     // Only a custom split carries amounts; an even SPLIT is worked out server-side.
-    if (outcome === 'CUSTOM_SPLIT') {
+    if (outcome === CUSTOM_SPLIT) {
       body.refundAmountCents = consumerCents
       body.proAmountCents = proCents
     }
@@ -698,185 +412,25 @@ export default function DisputeDetails() {
         </div>
 
         {/* Right column — Resolution Actions */}
-        <div className="w-full rounded-3xl bg-surface-muted px-4 py-6 wide:w-[320px]">
-          <div className="flex flex-col gap-6">
-            <h3 className="font-bold text-ink" style={{ fontSize: '20px', lineHeight: '20px' }}>
-              {TEXT.resolutionActionsTitle}
-            </h3>
-            <div className="flex flex-col gap-4">
-              {actions.map((action) => {
-                const isSelected = selectedAction === action.key
-                const isCustom = action.key === 'CUSTOM_SPLIT'
-                // A resolved case is a record, not a form — cards stop responding.
-                const interactive = !isResolved
-                return (
-                  <div
-                    key={action.key}
-                    role={interactive ? 'button' : undefined}
-                    tabIndex={interactive ? 0 : undefined}
-                    aria-current={isResolved && isSelected ? 'true' : undefined}
-                    onClick={interactive ? () => setSelectedAction(action.key) : undefined}
-                    onKeyDown={
-                      interactive
-                        ? (e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              setSelectedAction(action.key)
-                            }
-                          }
-                        : undefined
-                    }
-                    className={`w-full rounded-lg border px-2 py-3 text-left transition-colors wide:w-[288px] ${
-                      interactive ? 'cursor-pointer' : 'cursor-default'
-                    }`}
-                    style={{
-                      backgroundColor: isSelected ? action.selectedBg : '#EEEEEE',
-                      borderColor: isSelected ? action.selectedBorder : '#D9D9D9',
-                    }}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <span
-                        className="font-semibold text-ink"
-                        style={{ fontSize: '16px', lineHeight: '16px' }}
-                      >
-                        {action.title}
-                      </span>
-                      {action.subtitle && (
-                        <span
-                          className="font-medium text-muted"
-                          style={{ fontSize: '14px', lineHeight: '14px' }}
-                        >
-                          {action.subtitle}
-                        </span>
-                      )}
-
-                      {isCustom && isSelected && (
-                        <div className="mt-2 flex w-full flex-col gap-4 wide:w-[272px]">
-                          <div className="flex flex-col gap-2">
-                            <label
-                              htmlFor="consumer-refund"
-                              className="font-semibold text-ink"
-                              style={{ fontSize: '14px', lineHeight: '14px' }}
-                            >
-                              {TEXT.consumerRefundLabel}
-                            </label>
-                            <input
-                              id="consumer-refund"
-                              type="text"
-                              value={consumerRefund}
-                              onChange={(e) =>
-                                editSplit(e.target.value, setConsumerRefund, setProRefund)
-                              }
-                              onClick={(e) => e.stopPropagation()}
-                              readOnly={isResolved}
-                              placeholder={TEXT.customAmountPlaceholder}
-                              className="rounded-lg border bg-white px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted read-only:text-muted focus:border-primary"
-                              style={{ borderColor: '#D9D9D9', fontSize: '14px' }}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <label
-                              htmlFor="pro-refund"
-                              className="font-semibold text-ink"
-                              style={{ fontSize: '14px', lineHeight: '14px' }}
-                            >
-                              {TEXT.proRefundLabel}
-                            </label>
-                            <input
-                              id="pro-refund"
-                              type="text"
-                              value={proRefund}
-                              onChange={(e) =>
-                                editSplit(e.target.value, setProRefund, setConsumerRefund)
-                              }
-                              onClick={(e) => e.stopPropagation()}
-                              readOnly={isResolved}
-                              placeholder={TEXT.customAmountPlaceholder}
-                              className="rounded-lg border bg-white px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted read-only:text-muted focus:border-primary"
-                              style={{ borderColor: '#D9D9D9', fontSize: '14px' }}
-                            />
-                          </div>
-                          {splitError && (
-                            <p
-                              className="font-medium text-danger"
-                              style={{ fontSize: '12px', lineHeight: '1.4' }}
-                            >
-                              {splitError}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-
-              {/* Admin note */}
-              <div className="flex w-full flex-col gap-3 wide:w-[288px]">
-                <label
-                  htmlFor="admin-note"
-                  className="font-medium text-ink"
-                  style={{ fontSize: '16px', lineHeight: '16px' }}
-                >
-                  {TEXT.adminNoteLabel}
-                  <span className="text-danger">{COMMON_TEXT.requiredMark}</span>
-                </label>
-                {showRecordedNote ? (
-                  <div className="rounded-lg border px-2 py-3" style={{ borderColor: '#D9D9D9' }}>
-                    <p
-                      className="font-normal text-muted"
-                      style={{ fontSize: '14px', lineHeight: '1.5' }}
-                    >
-                      {resolutionReason || adminNote || COMMON_TEXT.emptyValue}
-                    </p>
-                  </div>
-                ) : (
-                  <textarea
-                    id="admin-note"
-                    value={adminNote}
-                    onChange={(e) => setAdminNote(e.target.value)}
-                    placeholder={TEXT.adminNotePlaceholder}
-                    className="rounded-lg border px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted focus:border-primary"
-                    style={{
-                      height: '133px',
-                      borderColor: '#D9D9D9',
-                      fontSize: '14px',
-                      lineHeight: '1.5',
-                      resize: 'none',
-                    }}
-                  />
-                )}
-              </div>
-
-              {/* Confirm button — a resolved case has nothing left to confirm */}
-              {!isResolved && (
-                <>
-                  {submitError && (
-                    <p className="w-full text-danger wide:w-[288px]" style={{ fontSize: '14px' }}>
-                      {submitError}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    disabled={!canConfirm}
-                    onClick={confirmDecision}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl font-bold transition-colors wide:w-[288px]"
-                    style={{
-                      height: '56px',
-                      fontSize: '18px',
-                      backgroundColor: canConfirm ? '#0067DE' : '#D5D4D4',
-                      color: canConfirm ? '#FEFEFE' : '#6A6A6A',
-                      cursor: canConfirm ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
-                    {TEXT.confirmDecision}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <ResolutionPanel
+          actions={actions}
+          selectedAction={selectedAction}
+          setSelectedAction={setSelectedAction}
+          isResolved={isResolved}
+          consumerRefund={consumerRefund}
+          proRefund={proRefund}
+          onConsumerRefundChange={(value) => editSplit(value, setConsumerRefund, setProRefund)}
+          onProRefundChange={(value) => editSplit(value, setProRefund, setConsumerRefund)}
+          splitError={splitError}
+          showRecordedNote={showRecordedNote}
+          resolutionReason={resolutionReason}
+          adminNote={adminNote}
+          setAdminNote={setAdminNote}
+          submitError={submitError}
+          canConfirm={canConfirm}
+          submitting={submitting}
+          confirmDecision={confirmDecision}
+        />
       </div>
 
       <SuccessModal

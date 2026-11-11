@@ -8,6 +8,7 @@ import PlatformSettings from './pages/PlatformSettings'
 import DisputeResolution from './pages/DisputeResolution'
 import DisputeDetails from './pages/DisputeDetails'
 import AuditLog from './pages/AuditLog'
+import ComingSoon from './pages/ComingSoon'
 import { useDocumentTitle } from './hooks/useDocumentTitle'
 import { clearSession, isLoggedIn } from './lib/session'
 import { ROUTES } from './config/routes'
@@ -42,11 +43,7 @@ function App() {
       >
         <Route
           path={ROUTES.dashboard}
-          element={
-            <div className="text-2xl font-bold text-gray-400">
-              {NAVIGATION_TEXT.dashboardComingSoon}
-            </div>
-          }
+          element={<ComingSoon text={NAVIGATION_TEXT.dashboardComingSoon} />}
         />
         <Route path={ROUTES.proVerification} element={<ProVerification />} />
         <Route
@@ -68,11 +65,7 @@ function App() {
         />
         <Route
           path={ROUTES.userManagement}
-          element={
-            <div className="text-2xl font-bold text-gray-400">
-              {NAVIGATION_TEXT.userManagementComingSoon}
-            </div>
-          }
+          element={<ComingSoon text={NAVIGATION_TEXT.userManagementComingSoon} />}
         />
         <Route path={ROUTES.platformSettings} element={<PlatformSettings />} />
         <Route path={ROUTES.auditLog} element={<AuditLog />} />
