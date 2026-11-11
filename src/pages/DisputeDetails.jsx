@@ -18,6 +18,7 @@ import { useApiResource } from '../hooks/useApiResource'
 import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
 import Button from '../components/ui/Button'
+import Modal from '../components/ui/Modal'
 import PageHeader from '../components/ui/PageHeader'
 import DisputeStatusBadge, { isResolvedStatus } from '../features/disputes/DisputeStatusBadge'
 import { formatDateTime, formatTime, parseDate } from '../utils/format'
@@ -236,6 +237,9 @@ function LocationItem({ item, isLast }) {
   )
 }
 
+const SUCCESS_TITLE_ID = 'dispute-success-title'
+
+/** "Decision recorded" confirmation; closes itself after `autoDismissMs`. */
 function SuccessModal({ open, onClose, autoDismissMs = 2500 }) {
   useEffect(() => {
     if (!open) return
@@ -243,24 +247,21 @@ function SuccessModal({ open, onClose, autoDismissMs = 2500 }) {
     return () => clearTimeout(timer)
   }, [open, onClose, autoDismissMs])
 
-  if (!open) return null
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      onClick={onClose}
+    <Modal
+      open={open}
+      onClose={onClose}
+      labelledBy={SUCCESS_TITLE_ID}
+      backdropClassName="backdrop:bg-black/50"
+      className="w-[780px] rounded-[24px] bg-white"
     >
-      <div
-        className="flex flex-col items-center bg-white shadow-xl"
-        style={{ width: '780px', borderRadius: '24px', padding: '48px 40px' }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="flex flex-col items-center px-6 py-10 sm:px-10 sm:py-12">
         <svg
-          width="160"
-          height="160"
           viewBox="0 0 160 160"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          className="h-28 w-28 sm:h-40 sm:w-40"
         >
           <circle cx="80" cy="80" r="68" stroke="#00861D" strokeWidth="10" fill="none" />
           <path
@@ -273,19 +274,19 @@ function SuccessModal({ open, onClose, autoDismissMs = 2500 }) {
           />
         </svg>
         <h3
-          className="mt-8 text-center font-extrabold text-ink"
-          style={{ fontSize: '32px', lineHeight: '1.2' }}
+          id={SUCCESS_TITLE_ID}
+          className="mt-8 text-center text-2xl font-extrabold leading-[1.2] text-ink sm:text-[32px]"
         >
           {TEXT.successTitle}
         </h3>
         <p
-          className="mt-4 text-center font-medium text-muted"
-          style={{ fontSize: '18px', lineHeight: '1.5', maxWidth: '600px' }}
+          className="mt-4 max-w-[600px] text-center font-medium text-muted"
+          style={{ fontSize: '18px', lineHeight: '1.5' }}
         >
           {TEXT.successMessage}
         </p>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -511,9 +512,9 @@ export default function DisputeDetails() {
       />
 
       {/* Main grid: left content + right resolution actions */}
-      <div className="flex items-start gap-6">
+      <div className="flex flex-col items-start gap-6 wide:flex-row">
         {/* Left column */}
-        <div className="flex flex-col gap-6" style={{ width: '716px' }}>
+        <div className="flex w-full flex-col gap-6 wide:w-[716px]">
           {/* Customer Info */}
           <CollapsibleCard
             icon={<User className="h-6 w-6 text-ink" />}
@@ -687,7 +688,7 @@ export default function DisputeDetails() {
         </div>
 
         {/* Right column — Resolution Actions */}
-        <div className="rounded-3xl bg-surface-muted px-4 py-6" style={{ width: '320px' }}>
+        <div className="w-full rounded-3xl bg-surface-muted px-4 py-6 wide:w-[320px]">
           <div className="flex flex-col gap-6">
             <h3 className="font-bold text-ink" style={{ fontSize: '20px', lineHeight: '20px' }}>
               {TEXT.resolutionActionsTitle}
@@ -715,13 +716,12 @@ export default function DisputeDetails() {
                           }
                         : undefined
                     }
-                    className={`rounded-lg border px-2 py-3 text-left transition-colors ${
+                    className={`w-full rounded-lg border px-2 py-3 text-left transition-colors wide:w-[288px] ${
                       interactive ? 'cursor-pointer' : 'cursor-default'
                     }`}
                     style={{
                       backgroundColor: isSelected ? action.selectedBg : '#EEEEEE',
                       borderColor: isSelected ? action.selectedBorder : '#D9D9D9',
-                      width: '288px',
                     }}
                   >
                     <div className="flex flex-col gap-2">
@@ -741,7 +741,7 @@ export default function DisputeDetails() {
                       )}
 
                       {isCustom && isSelected && (
-                        <div className="mt-2 flex flex-col gap-4" style={{ width: '272px' }}>
+                        <div className="mt-2 flex w-full flex-col gap-4 wide:w-[272px]">
                           <div className="flex flex-col gap-2">
                             <label
                               htmlFor="consumer-refund"
@@ -802,7 +802,7 @@ export default function DisputeDetails() {
               })}
 
               {/* Admin note */}
-              <div className="flex flex-col gap-3" style={{ width: '288px' }}>
+              <div className="flex w-full flex-col gap-3 wide:w-[288px]">
                 <label
                   htmlFor="admin-note"
                   className="font-medium text-ink"
@@ -842,7 +842,7 @@ export default function DisputeDetails() {
               {!isResolved && (
                 <>
                   {submitError && (
-                    <p className="text-danger" style={{ fontSize: '14px', width: '288px' }}>
+                    <p className="w-full text-danger wide:w-[288px]" style={{ fontSize: '14px' }}>
                       {submitError}
                     </p>
                   )}
@@ -850,10 +850,9 @@ export default function DisputeDetails() {
                     type="button"
                     disabled={!canConfirm}
                     onClick={confirmDecision}
-                    className="flex items-center justify-center gap-2 rounded-xl font-bold transition-colors"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl font-bold transition-colors wide:w-[288px]"
                     style={{
                       height: '56px',
-                      width: '288px',
                       fontSize: '18px',
                       backgroundColor: canConfirm ? '#0067DE' : '#D5D4D4',
                       color: canConfirm ? '#FEFEFE' : '#6A6A6A',

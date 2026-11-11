@@ -207,12 +207,12 @@ export default function PlatformSettings() {
       />
 
       {/* Tabs - Figma style: filled active tab */}
-      <div className="flex">
+      <div className="flex overflow-x-auto md:overflow-visible">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="font-semibold transition-colors"
+            className="font-semibold transition-colors max-md:shrink-0 max-md:whitespace-nowrap"
             style={{
               padding: '16px 16px',
               fontSize: '18px',

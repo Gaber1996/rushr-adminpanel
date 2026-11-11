@@ -301,7 +301,7 @@ export default function VerificationDetails() {
       </div>
 
       {/* Content: Left (Info + Docs) + Right (Document Viewer) */}
-      <div className="flex gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row">
         {/* Left Column */}
         <div className="flex flex-1 flex-col gap-8">
           {/* Pro Information Card */}
@@ -360,7 +360,7 @@ export default function VerificationDetails() {
         </div>
 
         {/* Right Column - Document Viewer */}
-        <div className="flex w-[340px] flex-col gap-4">
+        <div className="flex w-full flex-col gap-4 lg:w-[340px]">
           <div
             className="flex flex-col rounded-2xl border border-gray-100 bg-gray-50 p-6"
             style={{ minHeight: '480px' }}

@@ -19,6 +19,10 @@ export const NAVIGATION_TEXT = {
 
   // Sidebar
   logOut: 'Log Out',
+  // Screen readers only: the menu button and the drawer below the lg breakpoint.
+  openMenu: 'Open menu',
+  closeMenu: 'Close menu',
+  mainNavigation: 'Main navigation',
 
   // Placeholder pages
   dashboardComingSoon: 'Dashboard - Coming Soon',

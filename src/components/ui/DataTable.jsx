@@ -22,7 +22,8 @@ const VARIANTS = {
   grid: {
     container:
       'overflow-hidden rounded-xl bg-white shadow-[0_0_0_1px_#ECECEE,0_1px_3px_0_rgba(0,0,0,0.06)]',
-    table: 'w-full table-fixed',
+    // min-w keeps the auto-width column readable; narrower screens scroll sideways instead.
+    table: 'w-full table-fixed max-lg:min-w-[1000px]',
     headRow: '',
     th: 'h-12 border-b bg-surface-subtle px-4 text-center text-base font-medium text-ink',
     row: '',
@@ -108,83 +109,85 @@ export default function DataTable({
 
   return (
     <div className={styles.container}>
-      {/* Desktop and tablet: the table */}
-      <table className={`hidden md:table ${styles.table}`}>
-        {loading && loadingLabel && <caption className="sr-only">{loadingLabel}</caption>}
-        {isGrid && (
-          <colgroup>
-            {columns.map((col) => (
-              <col key={col.key} style={col.width ? { width: col.width } : undefined} />
-            ))}
-          </colgroup>
-        )}
-        <thead>
-          <tr className={styles.headRow}>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                scope="col"
-                className={`${styles.th} ${
-                  isGrid
-                    ? showRows && rows.length > 0 && isHighlighted(rows[0])
-                      ? 'border-danger'
-                      : 'border-line'
-                    : ''
-                }`}
-              >
-                {col.sortIndicator ? (
-                  <span className="flex items-center gap-1">
-                    {col.header} <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                ) : (
-                  col.header
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody
-          aria-busy={loading || undefined}
-          className={refreshing ? 'opacity-60 transition-opacity' : undefined}
-        >
-          {firstLoad &&
-            Array.from({ length: skeletonRows }, (_, i) => (
-              <tr key={`skeleton-${i}`} className={isGrid ? '' : styles.row}>
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className={
-                      isGrid
-                        ? `${styles.cell} px-4 ${i % 2 ? 'bg-surface-subtle' : 'bg-surface'} border-line`
-                        : styles.cell
-                    }
-                  >
-                    <Skeleton className={`h-4 ${isGrid ? 'mx-auto w-3/4' : 'w-24'}`} />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          {!loading && error && message(errorContent)}
-          {showRows &&
-            rows.map((row, index) => (
-              <tr key={rowKey(row)} className={styles.row}>
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className={
-                      isGrid
-                        ? `${styles.cell} ${gridRowTone(index)} ${cellClass(col, row) ?? defaultCellText}`
-                        : `${styles.cell} ${cellClass(col, row) ?? defaultCellText}`
-                    }
-                  >
-                    {col.render(row, index)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          {showRows && !loading && rows.length === 0 && message(emptyMessage)}
-        </tbody>
-      </table>
+      {/* Desktop and tablet: the table (scrolls sideways if the screen is too narrow) */}
+      <div className="hidden overflow-x-auto md:block lg:overflow-visible">
+        <table className={styles.table}>
+          {loading && loadingLabel && <caption className="sr-only">{loadingLabel}</caption>}
+          {isGrid && (
+            <colgroup>
+              {columns.map((col) => (
+                <col key={col.key} style={col.width ? { width: col.width } : undefined} />
+              ))}
+            </colgroup>
+          )}
+          <thead>
+            <tr className={styles.headRow}>
+              {columns.map((col) => (
+                <th
+                  key={col.key}
+                  scope="col"
+                  className={`${styles.th} ${
+                    isGrid
+                      ? showRows && rows.length > 0 && isHighlighted(rows[0])
+                        ? 'border-danger'
+                        : 'border-line'
+                      : ''
+                  }`}
+                >
+                  {col.sortIndicator ? (
+                    <span className="flex items-center gap-1">
+                      {col.header} <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  ) : (
+                    col.header
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody
+            aria-busy={loading || undefined}
+            className={refreshing ? 'opacity-60 transition-opacity' : undefined}
+          >
+            {firstLoad &&
+              Array.from({ length: skeletonRows }, (_, i) => (
+                <tr key={`skeleton-${i}`} className={isGrid ? '' : styles.row}>
+                  {columns.map((col) => (
+                    <td
+                      key={col.key}
+                      className={
+                        isGrid
+                          ? `${styles.cell} px-4 ${i % 2 ? 'bg-surface-subtle' : 'bg-surface'} border-line`
+                          : styles.cell
+                      }
+                    >
+                      <Skeleton className={`h-4 ${isGrid ? 'mx-auto w-3/4' : 'w-24'}`} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            {!loading && error && message(errorContent)}
+            {showRows &&
+              rows.map((row, index) => (
+                <tr key={rowKey(row)} className={styles.row}>
+                  {columns.map((col) => (
+                    <td
+                      key={col.key}
+                      className={
+                        isGrid
+                          ? `${styles.cell} ${gridRowTone(index)} ${cellClass(col, row) ?? defaultCellText}`
+                          : `${styles.cell} ${cellClass(col, row) ?? defaultCellText}`
+                      }
+                    >
+                      {col.render(row, index)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            {showRows && !loading && rows.length === 0 && message(emptyMessage)}
+          </tbody>
+        </table>
+      </div>
 
       {/* Phones: one card per row */}
       <ul

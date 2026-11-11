@@ -110,8 +110,7 @@ export default function DisputeResolution() {
           <img
             src={emptyFolder}
             alt={TEXT.emptyAlt}
-            className="object-contain"
-            style={{ width: '390px', height: '390px' }}
+            className="aspect-square w-full max-w-[390px] object-contain"
           />
           <p
             className="text-center font-semibold text-ink"

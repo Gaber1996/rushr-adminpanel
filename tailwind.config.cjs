@@ -38,6 +38,10 @@ module.exports = {
       borderRadius: {
         '3xl': '44px',
       },
+      screens: {
+        // Sidebar (300) + page padding (80) + the dispute details columns (716 + 24 + 320).
+        wide: '1440px',
+      },
     },
   },
   plugins: [],

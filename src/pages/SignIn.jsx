@@ -56,25 +56,28 @@ export default function SignIn() {
       />
 
       {/* Center content */}
-      <div className="relative z-10 flex flex-col items-center gap-10">
+      <div className="relative z-10 flex w-full flex-col items-center gap-6 px-4 py-8 sm:gap-10">
         {/* Logo */}
         <img
           src={logo}
           alt={COMMON_TEXT.brandName}
-          className="h-[163px] w-[163px] object-contain"
+          className="h-24 w-24 object-contain sm:h-[163px] sm:w-[163px]"
         />
 
         {/* Card */}
         <div
-          className="flex w-[792px] items-center justify-center rounded-[44px]"
-          style={{ backgroundColor: '#FEFEFE', padding: '32px' }}
+          className="flex w-full max-w-[792px] items-center justify-center rounded-[24px] p-6 sm:rounded-[44px] sm:p-8"
+          style={{ backgroundColor: '#FEFEFE' }}
         >
-          <form onSubmit={handleSubmit} className="flex w-[728px] flex-col gap-12">
+          <form
+            onSubmit={handleSubmit}
+            className="flex w-full max-w-[728px] flex-col gap-8 sm:gap-12"
+          >
             {/* Heading */}
             <div className="flex flex-col items-center gap-4">
               <h1
-                className="text-center leading-[40px]"
-                style={{ fontSize: '40px', fontWeight: 800, color: '#0F0F0F' }}
+                className="text-center text-3xl leading-tight sm:text-[40px] sm:leading-[40px]"
+                style={{ fontWeight: 800, color: '#0F0F0F' }}
               >
                 {AUTH_TEXT.title}
               </h1>

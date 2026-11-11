@@ -19,7 +19,7 @@ export default function SearchInput({
 }) {
   return (
     <label
-      className={`flex h-14 items-center gap-2 rounded-xl bg-surface px-3 ${APPEARANCES[appearance]} ${className}`}
+      className={`flex h-14 min-w-0 items-center gap-2 rounded-xl bg-surface px-3 ${APPEARANCES[appearance]} ${className}`}
     >
       <Search className="h-6 w-6 shrink-0 text-muted" aria-hidden="true" />
       <input

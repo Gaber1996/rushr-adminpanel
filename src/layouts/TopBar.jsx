@@ -1,26 +1,36 @@
 import { Bell, Menu } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { getUser } from '../lib/session'
-import { COMMON_TEXT } from '../texts'
+import { COMMON_TEXT, NAVIGATION_TEXT } from '../texts'
+import { ADMIN_NAV_ID } from './Sidebar'
 
 /** Initials for the avatar; falls back to the original "AK" placeholder. */
 export function getInitials({ firstName, lastName }) {
   return `${(firstName || 'A')[0]}${(lastName || 'K')[0]}`.toUpperCase()
 }
 
-export default function TopBar() {
+export default function TopBar({ navOpen, onMenuClick, menuButtonRef }) {
   const initials = getInitials(getUser())
 
   return (
-    <header
-      className="flex w-full items-center gap-4 border-b border-gray-100 bg-white"
-      style={{ height: '80px', padding: '12px 80px' }}
-    >
-      <button className="lg:hidden">
-        <Menu className="h-6 w-6 text-gray-400" />
+    <header className="flex h-20 w-full shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 py-3 sm:gap-4 sm:px-8 lg:px-20">
+      <button
+        ref={menuButtonRef}
+        type="button"
+        onClick={onMenuClick}
+        aria-label={NAVIGATION_TEXT.openMenu}
+        aria-expanded={navOpen}
+        aria-controls={ADMIN_NAV_ID}
+        className="lg:hidden"
+      >
+        <Menu className="h-6 w-6 text-gray-400" aria-hidden="true" />
       </button>
 
-      <img src={logo} alt={COMMON_TEXT.brandName} className="h-[80px] w-[80px] object-contain" />
+      <img
+        src={logo}
+        alt={COMMON_TEXT.brandName}
+        className="h-14 w-14 object-contain sm:h-[80px] sm:w-[80px]"
+      />
 
       <div className="flex-1" />
 

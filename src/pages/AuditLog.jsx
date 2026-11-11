@@ -102,7 +102,7 @@ export default function AuditLog() {
 
         <div className="flex flex-col gap-8">
           {/* Search + Filter */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
             <SearchInput
               value={search}
               onChange={(value) => {
@@ -117,8 +117,8 @@ export default function AuditLog() {
               <button
                 type="button"
                 onClick={() => setFilterOpen((v) => !v)}
-                className="flex items-center justify-center gap-2 rounded-xl border transition-colors hover:bg-primary-soft"
-                style={{ height: '56px', width: '157px', borderColor: '#0067DE' }}
+                className="flex items-center justify-center gap-2 rounded-xl border px-4 transition-colors hover:bg-primary-soft md:w-[157px] md:px-0"
+                style={{ height: '56px', borderColor: '#0067DE' }}
               >
                 <SlidersHorizontal className="h-6 w-6" style={{ color: '#0052B0' }} />
                 <span className="font-bold" style={{ fontSize: '18px', color: '#0052B0' }}>
