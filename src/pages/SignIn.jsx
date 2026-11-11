@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, EyeOff, Eye, Loader2 } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { saveSession } from '../lib/session'
+import { ROUTES } from '../config/routes'
+import { ENDPOINTS } from '../config/endpoints'
 import logo from '../assets/logo.png'
 import bgImage from '../assets/signin-bg.png'
 
@@ -20,14 +22,14 @@ export default function SignIn() {
     setLoading(true)
 
     try {
-      const res = await apiRequest('/api/admin/login', {
+      const res = await apiRequest(ENDPOINTS.login, {
         method: 'POST',
         body: JSON.stringify({ emailOrPhone: email, password }),
       })
 
       if (res.success && res.data?.role === 'ADMIN') {
         saveSession(res.data)
-        navigate('/home')
+        navigate(ROUTES.home)
       } else if (res.success && res.data?.role !== 'ADMIN') {
         setError('Access denied. Admin privileges required.')
       } else {
@@ -66,13 +68,13 @@ export default function SignIn() {
             {/* Heading */}
             <div className="flex flex-col items-center gap-4">
               <h1
-                className="text-center font-montserrat leading-[40px]"
+                className="text-center leading-[40px]"
                 style={{ fontSize: '40px', fontWeight: 800, color: '#0F0F0F' }}
               >
                 Welcome Back!
               </h1>
               <p
-                className="text-center font-montserrat"
+                className="text-center"
                 style={{ fontSize: '20px', fontWeight: 600, color: '#6A6A6A', lineHeight: '20px' }}
               >
                 Sign In To Your Account
@@ -84,7 +86,7 @@ export default function SignIn() {
               {/* Error message */}
               {error && (
                 <div
-                  className="rounded-xl px-4 py-3 font-montserrat text-sm font-medium"
+                  className="rounded-xl px-4 py-3 text-sm font-medium"
                   style={{
                     backgroundColor: '#FEF2F2',
                     color: '#DC2626',
@@ -100,7 +102,7 @@ export default function SignIn() {
                 {/* Email */}
                 <div className="flex flex-col gap-2">
                   <label
-                    className="font-montserrat"
+                    className=""
                     style={{ fontSize: '16px', fontWeight: 500, color: '#0F0F0F' }}
                   >
                     Email
@@ -115,7 +117,7 @@ export default function SignIn() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="flex-1 bg-transparent font-montserrat text-sm outline-none"
+                      className="flex-1 bg-transparent text-sm outline-none"
                       style={{ color: '#0F0F0F', fontSize: '14px' }}
                     />
                     <Mail className="h-6 w-6 flex-shrink-0" style={{ color: '#6A6A6A' }} />
@@ -125,7 +127,7 @@ export default function SignIn() {
                 {/* Password */}
                 <div className="flex flex-col gap-2">
                   <label
-                    className="font-montserrat"
+                    className=""
                     style={{ fontSize: '16px', fontWeight: 500, color: '#0F0F0F' }}
                   >
                     Password
@@ -141,7 +143,7 @@ export default function SignIn() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
                       required
-                      className="flex-1 bg-transparent font-montserrat text-sm outline-none"
+                      className="flex-1 bg-transparent text-sm outline-none"
                       style={{ color: '#0F0F0F', fontSize: '14px' }}
                     />
                     <button
@@ -163,7 +165,7 @@ export default function SignIn() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl font-montserrat disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-2 rounded-xl disabled:opacity-70"
                 style={{
                   backgroundColor: '#0067DE',
                   height: '56px',

@@ -25,9 +25,9 @@ export default function TopBar() {
 
       {/* Notification */}
       <div className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full hover:bg-gray-50">
-        <Bell className="h-6 w-6 text-[#6A6A6A]" />
+        <Bell className="h-6 w-6 text-muted" />
         <span
-          className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-md font-montserrat text-xs"
+          className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-md text-xs"
           style={{ backgroundColor: '#FFFBF3', color: '#D97706', fontSize: '12px' }}
         >
           4
@@ -36,7 +36,7 @@ export default function TopBar() {
 
       {/* Profile */}
       <div
-        className="flex h-14 w-14 items-center justify-center rounded-full font-montserrat font-semibold text-white"
+        className="flex h-14 w-14 items-center justify-center rounded-full font-semibold text-white"
         style={{ backgroundColor: '#0067DE', fontSize: '24px' }}
       >
         {initials}

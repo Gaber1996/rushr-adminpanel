@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Search, SlidersHorizontal, Plus, Trash2, ChevronDown, Loader2, Upload } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
+import { ENDPOINTS } from '../config/endpoints'
+import { formatDate } from '../utils/format'
 
 function EditIcon({ className = '' }) {
   return (
@@ -38,12 +40,6 @@ function EditIcon({ className = '' }) {
       />
     </svg>
   )
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '—'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 // ─── Add / Edit Modal (Figma: 1055w, radius 44, gap 24) ─────────────
@@ -110,27 +106,21 @@ function CategoryModal({ isOpen, onClose, onSubmit, loading, category }) {
       onClick={onClose}
     >
       <div
-        className="bg-[#FEFEFE] shadow-xl"
+        className="bg-surface shadow-xl"
         style={{ width: '1055px', borderRadius: '44px', padding: '40px' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-6" style={{ width: '975px', margin: '0 auto' }}>
           {/* Fields */}
           <div className="flex flex-col gap-8">
-            <h3
-              className="font-montserrat font-bold text-[#0F0F0F]"
-              style={{ fontSize: '32px', lineHeight: '32px' }}
-            >
+            <h3 className="font-bold text-ink" style={{ fontSize: '32px', lineHeight: '32px' }}>
               {isEdit ? 'Edit New Category' : 'Add New Category'}
             </h3>
 
             <div className="flex flex-col gap-5">
               {/* Category Name */}
               <div className="flex flex-col gap-2">
-                <label
-                  className="font-montserrat font-semibold text-[#0F0F0F]"
-                  style={{ fontSize: '18px' }}
-                >
+                <label className="font-semibold text-ink" style={{ fontSize: '18px' }}>
                   Category Name
                 </label>
                 <input
@@ -139,40 +129,34 @@ function CategoryModal({ isOpen, onClose, onSubmit, loading, category }) {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Plumbing"
                   required
-                  className="w-full rounded-xl border px-3 font-montserrat text-sm text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] focus:border-blue-400"
+                  className="w-full rounded-xl border px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
                   style={{ borderColor: '#D9D9D9', height: '56px' }}
                 />
               </div>
 
               {/* Category Icon */}
               <div className="flex flex-col gap-2">
-                <label
-                  className="font-montserrat font-semibold text-[#0F0F0F]"
-                  style={{ fontSize: '18px' }}
-                >
+                <label className="font-semibold text-ink" style={{ fontSize: '18px' }}>
                   Category Icon
                 </label>
                 <div
                   className="flex w-full cursor-pointer items-center gap-2 rounded-xl border px-3 transition-colors hover:border-blue-400"
                   style={{ borderColor: '#D9D9D9', height: '48px' }}
                 >
-                  <Upload className="h-4 w-4 text-[#6A6A6A]" />
+                  <Upload className="h-4 w-4 text-muted" />
                   <input
                     type="text"
                     value={iconName}
                     onChange={(e) => setIconName(e.target.value)}
                     placeholder="Upload Category Icon"
-                    className="flex-1 bg-transparent font-montserrat text-sm text-[#0F0F0F] outline-none placeholder:text-[#6A6A6A]"
+                    className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
                   />
                 </div>
               </div>
 
               {/* Issue Types */}
               <div className="flex flex-col gap-2">
-                <label
-                  className="font-montserrat font-semibold text-[#0F0F0F]"
-                  style={{ fontSize: '18px' }}
-                >
+                <label className="font-semibold text-ink" style={{ fontSize: '18px' }}>
                   Issue Types (comma separated)
                 </label>
                 <input
@@ -180,7 +164,7 @@ function CategoryModal({ isOpen, onClose, onSubmit, loading, category }) {
                   value={issueTypes}
                   onChange={(e) => setIssueTypes(e.target.value)}
                   placeholder="e.g. Leaking pipe, Running toilet, Clogged drain, Broken faucet"
-                  className="w-full rounded-xl border px-3 font-montserrat text-sm text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] focus:border-blue-400"
+                  className="w-full rounded-xl border px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
                   style={{ borderColor: '#D9D9D9', height: '56px' }}
                 />
               </div>
@@ -194,7 +178,7 @@ function CategoryModal({ isOpen, onClose, onSubmit, loading, category }) {
                 type="button"
                 onClick={(e) => handleSubmit(e, true)}
                 disabled={!name.trim() || loading}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border font-montserrat font-extrabold transition-colors hover:bg-blue-50 disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border font-extrabold transition-colors hover:bg-blue-50 disabled:opacity-50"
                 style={{
                   borderColor: '#0067DE',
                   color: '#0052B0',
@@ -209,7 +193,7 @@ function CategoryModal({ isOpen, onClose, onSubmit, loading, category }) {
               type="button"
               onClick={(e) => handleSubmit(e, false)}
               disabled={!name.trim() || loading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl font-montserrat font-extrabold text-[#FEFEFE] transition-colors disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl font-extrabold text-surface transition-colors disabled:opacity-50"
               style={{ backgroundColor: '#0067DE', height: '56px', fontSize: '18px' }}
             >
               {loading && <Loader2 className="h-5 w-5 animate-spin" />}
@@ -232,7 +216,7 @@ function DeleteModal({ isOpen, onClose, onConfirm, loading, categoryName }) {
       onClick={onClose}
     >
       <div
-        className="flex flex-col items-center bg-[#FEFEFE] shadow-xl"
+        className="flex flex-col items-center bg-surface shadow-xl"
         style={{ width: '1055px', borderRadius: '44px', padding: '40px' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -263,13 +247,13 @@ function DeleteModal({ isOpen, onClose, onConfirm, loading, categoryName }) {
           {/* Text */}
           <div className="flex flex-col items-center gap-6" style={{ width: '871px' }}>
             <h3
-              className="text-center font-montserrat font-extrabold text-[#0F0F0F]"
+              className="text-center font-extrabold text-ink"
               style={{ fontSize: '40px', lineHeight: '40px' }}
             >
               Delete This Category ?
             </h3>
             <p
-              className="text-center font-montserrat font-semibold text-[#6A6A6A]"
+              className="text-center font-semibold text-muted"
               style={{ fontSize: '24px', lineHeight: '24px' }}
             >
               Are you sure you want to delete this category? This action cannot be undone.
@@ -280,7 +264,7 @@ function DeleteModal({ isOpen, onClose, onConfirm, loading, categoryName }) {
           <div className="mt-8 flex w-full gap-6" style={{ width: '975px' }}>
             <button
               onClick={onClose}
-              className="flex flex-1 items-center justify-center rounded-xl border font-montserrat font-extrabold transition-colors hover:bg-gray-50"
+              className="flex flex-1 items-center justify-center rounded-xl border font-extrabold transition-colors hover:bg-gray-50"
               style={{ borderColor: '#D9D9D9', color: '#6A6A6A', height: '56px', fontSize: '18px' }}
             >
               Cancel
@@ -288,7 +272,7 @@ function DeleteModal({ isOpen, onClose, onConfirm, loading, categoryName }) {
             <button
               onClick={onConfirm}
               disabled={loading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl font-montserrat font-extrabold text-[#FEFEFE] transition-colors disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl font-extrabold text-surface transition-colors disabled:opacity-50"
               style={{ backgroundColor: '#C20A0A', height: '56px', fontSize: '18px' }}
             >
               {loading && <Loader2 className="h-5 w-5 animate-spin" />}
@@ -308,7 +292,7 @@ export default function PlatformSettings() {
     loading,
     error,
     reload: reloadCategories,
-  } = useApiResource('/api/admin/categories', {
+  } = useApiResource(ENDPOINTS.categories, {
     errorMessage: 'Failed to load categories.',
     networkErrorMessage: 'Unable to connect to server.',
   })
@@ -324,7 +308,7 @@ export default function PlatformSettings() {
   async function handleAddCategory(payload, addAnother) {
     setActionLoading(true)
     try {
-      const res = await apiRequest('/api/admin/categories', {
+      const res = await apiRequest(ENDPOINTS.categories, {
         method: 'POST',
         body: JSON.stringify(payload),
       })
@@ -345,7 +329,7 @@ export default function PlatformSettings() {
     if (!editModal) return
     setActionLoading(true)
     try {
-      const res = await apiRequest(`/api/admin/categories/${editModal.id}`, {
+      const res = await apiRequest(ENDPOINTS.category(editModal.id), {
         method: 'PUT',
         body: JSON.stringify(payload),
       })
@@ -366,7 +350,7 @@ export default function PlatformSettings() {
     if (!deleteModal) return
     setActionLoading(true)
     try {
-      const res = await apiRequest(`/api/admin/categories/${deleteModal.id}`, {
+      const res = await apiRequest(ENDPOINTS.category(deleteModal.id), {
         method: 'DELETE',
       })
       if (res.success) {
@@ -398,21 +382,18 @@ export default function PlatformSettings() {
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-3">
           <h1
-            className="font-montserrat font-extrabold text-[#202020]"
+            className="font-extrabold text-heading"
             style={{ fontSize: '40px', lineHeight: '40px' }}
           >
             Platform Settings
           </h1>
-          <p
-            className="font-montserrat font-semibold text-[#6A6A6A]"
-            style={{ fontSize: '24px', lineHeight: '30px' }}
-          >
+          <p className="font-semibold text-muted" style={{ fontSize: '24px', lineHeight: '30px' }}>
             Manage all your platform setting
           </p>
         </div>
         <button
           onClick={() => setAddModal(true)}
-          className="flex items-center gap-2 rounded-xl px-6 font-montserrat font-extrabold text-white"
+          className="flex items-center gap-2 rounded-xl px-6 font-extrabold text-white"
           style={{ backgroundColor: '#0067DE', height: '56px', fontSize: '16px' }}
         >
           <Plus className="h-5 w-5" strokeWidth={3} />
@@ -426,7 +407,7 @@ export default function PlatformSettings() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className="font-montserrat font-semibold transition-colors"
+            className="font-semibold transition-colors"
             style={{
               padding: '16px 16px',
               fontSize: '18px',
@@ -449,17 +430,17 @@ export default function PlatformSettings() {
               className="flex flex-1 items-center gap-2 rounded-xl border px-3"
               style={{ borderColor: '#D9D9D9', height: '56px', backgroundColor: '#FEFEFE' }}
             >
-              <Search className="h-6 w-6 text-[#6A6A6A]" />
+              <Search className="h-6 w-6 text-muted" />
               <input
                 type="text"
                 placeholder="Search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent font-montserrat text-sm text-[#0F0F0F] outline-none placeholder:text-[#6A6A6A]"
+                className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
               />
             </div>
             <button
-              className="flex items-center gap-2 rounded-xl border px-4 font-montserrat font-semibold"
+              className="flex items-center gap-2 rounded-xl border px-4 font-semibold"
               style={{ borderColor: '#0067DE', height: '56px', fontSize: '16px', color: '#0067DE' }}
             >
               <SlidersHorizontal className="h-5 w-5" />
@@ -470,11 +451,11 @@ export default function PlatformSettings() {
           {/* Table */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-[#0067DE]" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : error ? (
             <div
-              className="rounded-xl px-4 py-3 font-montserrat text-sm font-medium"
+              className="rounded-xl px-4 py-3 text-sm font-medium"
               style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
             >
               {error}
@@ -484,20 +465,20 @@ export default function PlatformSettings() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                       <span className="flex items-center gap-1">
                         Category Name <ChevronDown className="h-4 w-4" />
                       </span>
                     </th>
-                    <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                       <span className="flex items-center gap-1">
                         Issue Types <ChevronDown className="h-4 w-4" />
                       </span>
                     </th>
-                    <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                       Last Update
                     </th>
-                    <th className="px-4 py-4 text-left font-montserrat text-sm font-semibold text-[#6A6A6A]">
+                    <th className="px-4 py-4 text-left text-sm font-semibold text-muted">
                       Actions
                     </th>
                   </tr>
@@ -508,27 +489,23 @@ export default function PlatformSettings() {
                       key={cat.id}
                       className="border-b border-gray-50 transition-colors hover:bg-gray-50/50"
                     >
-                      <td className="px-4 py-4 font-montserrat text-sm text-[#202020]">
-                        {cat.name}
-                      </td>
-                      <td className="max-w-[350px] truncate px-4 py-4 font-montserrat text-sm text-[#6A6A6A]">
+                      <td className="px-4 py-4 text-sm text-heading">{cat.name}</td>
+                      <td className="max-w-[350px] truncate px-4 py-4 text-sm text-muted">
                         {(cat.issueTypes || []).join(', ')}
                       </td>
-                      <td className="px-4 py-4 font-montserrat text-sm text-[#6A6A6A]">
-                        {formatDate(cat.updatedAt)}
-                      </td>
+                      <td className="px-4 py-4 text-sm text-muted">{formatDate(cat.updatedAt)}</td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-5">
                           <button
                             onClick={() => setEditModal(cat)}
-                            className="flex items-center gap-1.5 font-montserrat text-sm text-[#0067DE] hover:underline"
+                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
                           >
                             <EditIcon />
                             Edit
                           </button>
                           <button
                             onClick={() => setDeleteModal(cat)}
-                            className="flex items-center gap-1.5 font-montserrat text-sm text-[#C20A0A] hover:underline"
+                            className="flex items-center gap-1.5 text-sm text-danger hover:underline"
                           >
                             <Trash2 className="h-4 w-4" />
                             Delete
@@ -539,10 +516,7 @@ export default function PlatformSettings() {
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td
-                        colSpan={4}
-                        className="px-4 py-10 text-center font-montserrat text-sm text-[#6A6A6A]"
-                      >
+                      <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted">
                         No categories found.
                       </td>
                     </tr>
@@ -552,16 +526,16 @@ export default function PlatformSettings() {
 
               {/* Footer / Pagination */}
               <div className="flex items-center justify-center gap-4 border-t border-gray-100 px-4 py-4">
-                <span className="font-montserrat text-sm text-[#6A6A6A]">Per page</span>
+                <span className="text-sm text-muted">Per page</span>
                 <div
                   className="flex items-center gap-1 rounded-lg border px-3 py-1.5"
                   style={{ borderColor: '#D9D9D9' }}
                 >
-                  <span className="font-montserrat text-sm">5</span>
-                  <ChevronDown className="h-4 w-4 text-[#6A6A6A]" />
+                  <span className="text-sm">5</span>
+                  <ChevronDown className="h-4 w-4 text-muted" />
                 </div>
                 <button
-                  className="rounded-lg border px-4 py-2 font-montserrat text-sm font-medium"
+                  className="rounded-lg border px-4 py-2 text-sm font-medium"
                   style={{ borderColor: '#D9D9D9', color: '#6A6A6A' }}
                 >
                   Next
@@ -572,7 +546,7 @@ export default function PlatformSettings() {
         </>
       ) : (
         <div className="flex items-center justify-center py-20">
-          <p className="font-montserrat text-xl font-bold text-gray-300">Coming Soon</p>
+          <p className="text-xl font-bold text-gray-300">Coming Soon</p>
         </div>
       )}
 

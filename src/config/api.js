@@ -1,9 +1,10 @@
 import { clearSession, getToken, isLoggedIn } from '../lib/session'
+import { ROUTES } from './routes'
 
 export const BASE_URL = 'https://rusher-back-end-1.onrender.com'
 
 /** Where the app sends the admin when the server rejects their session. */
-const LOGIN_PATH = `${import.meta.env.BASE_URL}login`
+const LOGIN_PATH = `${import.meta.env.BASE_URL}${ROUTES.login.slice(1)}`
 
 /** Headers every authenticated request needs (none when signed out or the token has expired). */
 export function authHeaders() {

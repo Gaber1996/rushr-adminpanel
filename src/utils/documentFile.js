@@ -1,10 +1,11 @@
 import { authHeaders, BASE_URL } from '../config/api'
+import { ENDPOINTS } from '../config/endpoints'
 
 const PDF_MIME_TYPE = 'application/pdf'
 
 /** The protected file endpoint for a document's storage key ("uploads/pro-documents/x.png"). */
 export function getDocumentFileUrl(fileUrl) {
-  return `${BASE_URL}/api/files/${fileUrl.replace('uploads/', '')}`
+  return `${BASE_URL}${ENDPOINTS.file(fileUrl)}`
 }
 
 export function isPdfDocument(mimeType) {

@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { FileText, Loader2, CheckCircle2, XCircle, Clock, ArrowLeft, X } from 'lucide-react'
 import { apiRequest } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
+import { ROUTES } from '../config/routes'
+import { ENDPOINTS } from '../config/endpoints'
+import { formatDate } from '../utils/format'
 import { loadDocumentFile } from '../utils/documentFile'
 
 const DOC_TYPE_LABELS = {
@@ -60,12 +63,6 @@ function getStatus(status) {
   return STATUS_CONFIG[status] || STATUS_CONFIG.PENDING
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return '—'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
 function DocImage({ fileUrl, mimeType, alt }) {
   const [file, setFile] = useState(null) // { url, isPdf } from loadDocumentFile
   const [hasError, setHasError] = useState(false)
@@ -93,10 +90,10 @@ function DocImage({ fileUrl, mimeType, alt }) {
       {hasError ? (
         <div className="flex flex-col items-center gap-2 p-8 text-gray-400">
           <FileText className="h-12 w-12" strokeWidth={1.5} />
-          <span className="font-montserrat text-sm">Unable to load document</span>
+          <span className="text-sm">Unable to load document</span>
         </div>
       ) : !file ? (
-        <Loader2 className="h-8 w-8 animate-spin text-[#0067DE]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       ) : file.isPdf ? (
         // An <img> can't display a PDF, so it opens in the browser's PDF viewer.
         // #view=FitH fits the page to the panel's width.
@@ -138,24 +135,21 @@ function ActionModal({ isOpen, action, docLabel, onClose, onSubmit, loading }) {
       <div className="w-[480px] rounded-2xl bg-white shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-4 pt-6">
-          <h3 className="font-montserrat text-lg font-bold text-[#202020]">{title}</h3>
-          <button
-            onClick={onClose}
-            className="text-[#6A6A6A] transition-colors hover:text-[#202020]"
-          >
+          <h3 className="text-lg font-bold text-heading">{title}</h3>
+          <button onClick={onClose} className="text-muted transition-colors hover:text-heading">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 pb-6">
-          <p className="font-montserrat text-sm text-[#6A6A6A]">
+          <p className="text-sm text-muted">
             {isApprove ? 'Approving' : 'Rejecting'}{' '}
-            <strong className="text-[#202020]">{docLabel}</strong>
+            <strong className="text-heading">{docLabel}</strong>
           </p>
 
           {/* Reason */}
           <div className="flex flex-col gap-1.5">
-            <label className="font-montserrat text-sm font-medium text-[#0F0F0F]">
+            <label className="text-sm font-medium text-ink">
               Reason <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -167,22 +161,22 @@ function ActionModal({ isOpen, action, docLabel, onClose, onSubmit, loading }) {
                   : 'e.g. Document is blurry or expired'
               }
               rows={3}
-              className="w-full resize-none rounded-xl border px-3 py-3 font-montserrat text-sm text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] focus:border-blue-400"
+              className="w-full resize-none rounded-xl border px-3 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
               style={{ borderColor: '#D9D9D9' }}
             />
           </div>
 
           {/* Admin Notes */}
           <div className="flex flex-col gap-1.5">
-            <label className="font-montserrat text-sm font-medium text-[#0F0F0F]">
-              Admin Notes <span className="text-[#6A6A6A]">(optional)</span>
+            <label className="text-sm font-medium text-ink">
+              Admin Notes <span className="text-muted">(optional)</span>
             </label>
             <textarea
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}
               placeholder="Additional notes for internal reference"
               rows={2}
-              className="w-full resize-none rounded-xl border px-3 py-3 font-montserrat text-sm text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] focus:border-blue-400"
+              className="w-full resize-none rounded-xl border px-3 py-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-blue-400"
               style={{ borderColor: '#D9D9D9' }}
             />
           </div>
@@ -192,7 +186,7 @@ function ActionModal({ isOpen, action, docLabel, onClose, onSubmit, loading }) {
             <button
               type="button"
               onClick={onClose}
-              className="h-12 flex-1 rounded-xl border font-montserrat text-sm font-semibold text-[#6A6A6A] transition-colors hover:bg-gray-50"
+              className="h-12 flex-1 rounded-xl border text-sm font-semibold text-muted transition-colors hover:bg-gray-50"
               style={{ borderColor: '#D9D9D9' }}
             >
               Cancel
@@ -200,7 +194,7 @@ function ActionModal({ isOpen, action, docLabel, onClose, onSubmit, loading }) {
             <button
               type="submit"
               disabled={!reason.trim() || loading}
-              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl font-montserrat text-sm font-bold text-white transition-colors disabled:opacity-50"
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white transition-colors disabled:opacity-50"
               style={{ backgroundColor: accentColor }}
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -225,7 +219,7 @@ function ApproveRejectButtons({ selectedDoc, actionLoading, onApprove, onReject 
       <button
         onClick={onApprove}
         disabled={approveDisabled}
-        className="flex h-14 w-full items-center justify-center gap-2 rounded-xl font-montserrat text-base font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         style={{
           backgroundColor: selectedDoc && !approveDisabled ? '#0067DE' : '#FFFFFF',
           color: selectedDoc && !approveDisabled ? '#FFFFFF' : '#0067DE',
@@ -238,7 +232,7 @@ function ApproveRejectButtons({ selectedDoc, actionLoading, onApprove, onReject 
       <button
         onClick={onReject}
         disabled={rejectDisabled}
-        className="flex h-14 w-full items-center justify-center gap-2 rounded-xl font-montserrat text-base font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-14 w-full items-center justify-center gap-2 rounded-xl text-base font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         style={{
           backgroundColor: selectedDoc && !rejectDisabled ? '#DC2626' : '#FFFFFF',
           color: selectedDoc && !rejectDisabled ? '#FFFFFF' : '#DC2626',
@@ -260,7 +254,7 @@ export default function VerificationDetails() {
     loading,
     error,
     reload: reloadDocuments,
-  } = useApiResource(`/api/admin/contractors/${contractorId}/documents`, {
+  } = useApiResource(ENDPOINTS.contractorDocuments(contractorId), {
     errorMessage: 'Failed to load documents.',
     networkErrorMessage: 'Unable to connect to server.',
   })
@@ -287,18 +281,15 @@ export default function VerificationDetails() {
     const isApprove = modal.action === 'approve'
 
     try {
-      const res = await apiRequest(
-        `/api/admin/contractors/${contractorId}/verification/approve-reject`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            step,
-            approved: isApprove,
-            reason,
-            adminNotes: adminNotes || null,
-          }),
-        }
-      )
+      const res = await apiRequest(ENDPOINTS.contractorVerificationDecision(contractorId), {
+        method: 'POST',
+        body: JSON.stringify({
+          step,
+          approved: isApprove,
+          reason,
+          adminNotes: adminNotes || null,
+        }),
+      })
 
       if (res.success) {
         setModal({ open: false, action: null })
@@ -317,7 +308,7 @@ export default function VerificationDetails() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#0067DE]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -325,7 +316,7 @@ export default function VerificationDetails() {
   if (error) {
     return (
       <div
-        className="rounded-xl px-4 py-3 font-montserrat text-sm font-medium"
+        className="rounded-xl px-4 py-3 text-sm font-medium"
         style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}
       >
         {error}
@@ -338,20 +329,20 @@ export default function VerificationDetails() {
       {/* Header */}
       <div>
         <button
-          onClick={() => navigate('/pro-verification')}
-          className="mb-4 flex items-center gap-2 font-montserrat text-sm text-[#6A6A6A] transition-colors hover:text-[#0067DE]"
+          onClick={() => navigate(ROUTES.proVerification)}
+          className="mb-4 flex items-center gap-2 text-sm text-muted transition-colors hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Verification Queue
         </button>
         <h1
-          className="font-montserrat font-extrabold text-[#202020]"
+          className="font-extrabold text-heading"
           style={{ fontSize: '40px', lineHeight: '40px' }}
         >
           Verification Details
         </h1>
         <p
-          className="mt-4 font-montserrat font-semibold text-[#6A6A6A]"
+          className="mt-4 font-semibold text-muted"
           style={{ fontSize: '24px', lineHeight: '24px' }}
         >
           Review pro information and documents
@@ -363,37 +354,27 @@ export default function VerificationDetails() {
         {/* Left Column */}
         <div className="flex flex-1 flex-col gap-8">
           {/* Pro Information Card */}
-          <div className="rounded-2xl border border-gray-100 bg-[#F9FAFB] p-6">
-            <h2 className="mb-4 font-montserrat text-lg font-bold text-[#202020]">
-              Pro Information
-            </h2>
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+            <h2 className="mb-4 text-lg font-bold text-heading">Pro Information</h2>
             <div className="flex flex-col">
               <div className="flex justify-between border-b border-gray-200 py-3">
-                <span className="font-montserrat text-sm font-semibold text-[#6A6A6A]">
-                  Full Name:
-                </span>
-                <span className="font-montserrat text-sm font-bold text-[#202020]">
-                  {contractor.name}
-                </span>
+                <span className="text-sm font-semibold text-muted">Full Name:</span>
+                <span className="text-sm font-bold text-heading">{contractor.name}</span>
               </div>
               <div className="flex justify-between border-b border-gray-200 py-3">
-                <span className="font-montserrat text-sm font-semibold text-[#6A6A6A]">
-                  Phone Number:
-                </span>
-                <span className="font-montserrat text-sm font-bold text-[#202020]">—</span>
+                <span className="text-sm font-semibold text-muted">Phone Number:</span>
+                <span className="text-sm font-bold text-heading">—</span>
               </div>
               <div className="flex justify-between py-3">
-                <span className="font-montserrat text-sm font-semibold text-[#6A6A6A]">Email:</span>
-                <span className="font-montserrat text-sm font-bold text-[#202020]">
-                  {contractor.email}
-                </span>
+                <span className="text-sm font-semibold text-muted">Email:</span>
+                <span className="text-sm font-bold text-heading">{contractor.email}</span>
               </div>
             </div>
           </div>
 
           {/* Documents Card */}
-          <div className="rounded-2xl border border-gray-100 bg-[#F9FAFB] p-6">
-            <h2 className="mb-4 font-montserrat text-lg font-bold text-[#202020]">Documents</h2>
+          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
+            <h2 className="mb-4 text-lg font-bold text-heading">Documents</h2>
             <div className="flex flex-col gap-2">
               {documents.map((doc) => {
                 const status = getStatus(doc.verificationStatus)
@@ -404,24 +385,24 @@ export default function VerificationDetails() {
                     onClick={() => setSelectedDoc(doc)}
                     className={`flex w-full items-center justify-between rounded-xl border p-4 text-left transition-colors ${
                       isSelected
-                        ? 'border-[#0067DE] bg-white'
+                        ? 'border-primary bg-white'
                         : 'border-transparent bg-white hover:border-gray-200'
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <FileText className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#6A6A6A]" />
+                      <FileText className="mt-0.5 h-5 w-5 flex-shrink-0 text-muted" />
                       <div>
-                        <p className="font-montserrat text-sm font-bold text-[#202020]">
+                        <p className="text-sm font-bold text-heading">
                           {DOC_TYPE_LABELS[doc.documentType] || doc.documentType}
                         </p>
-                        <p className="mt-0.5 font-montserrat text-xs text-[#6A6A6A]">
+                        <p className="mt-0.5 text-xs text-muted">
                           Uploaded {formatDate(doc.createdAt)}
                           {doc.verifiedByName ? ` · Reviewed by ${doc.verifiedByName}` : ''}
                         </p>
                       </div>
                     </div>
                     <span
-                      className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1 font-montserrat text-xs font-medium"
+                      className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
                       style={{
                         backgroundColor: status.bg,
                         color: status.text,
@@ -441,12 +422,10 @@ export default function VerificationDetails() {
         {/* Right Column - Document Viewer */}
         <div className="flex w-[340px] flex-col gap-4">
           <div
-            className="flex flex-col rounded-2xl border border-gray-100 bg-[#F9FAFB] p-6"
+            className="flex flex-col rounded-2xl border border-gray-100 bg-gray-50 p-6"
             style={{ minHeight: '480px' }}
           >
-            <h2 className="mb-4 font-montserrat text-lg font-bold text-[#202020]">
-              Document Viewer
-            </h2>
+            <h2 className="mb-4 text-lg font-bold text-heading">Document Viewer</h2>
 
             {selectedDoc ? (
               <DocImage
@@ -456,10 +435,10 @@ export default function VerificationDetails() {
                 alt={DOC_TYPE_LABELS[selectedDoc.documentType] || 'Document'}
               />
             ) : (
-              <div className="flex flex-1 flex-col items-center justify-center gap-3 text-[#6A6A6A]">
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted">
                 <FileText className="h-12 w-12 text-gray-300" strokeWidth={1.5} />
-                <p className="font-montserrat text-sm font-medium">Document Viewer</p>
-                <p className="font-montserrat text-xs text-gray-400">Select Document To View.</p>
+                <p className="text-sm font-medium">Document Viewer</p>
+                <p className="text-xs text-gray-400">Select Document To View.</p>
               </div>
             )}
           </div>

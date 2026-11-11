@@ -9,12 +9,13 @@ import DisputeDetails from './pages/DisputeDetails'
 import AuditLog from './pages/AuditLog'
 import { useDocumentTitle } from './hooks/useDocumentTitle'
 import { clearSession, isLoggedIn } from './lib/session'
+import { ROUTES } from './config/routes'
 
 function ProtectedRoute({ children }) {
   if (!isLoggedIn()) {
     // Drop an expired token so it is not sent with the next sign-in.
     clearSession()
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
   return children
 }
@@ -23,7 +24,7 @@ function App() {
   useDocumentTitle()
   return (
     <Routes>
-      <Route path="/login" element={<SignIn />} />
+      <Route path={ROUTES.login} element={<SignIn />} />
       <Route
         element={
           <ProtectedRoute>
@@ -32,30 +33,24 @@ function App() {
         }
       >
         <Route
-          path="/dashboard"
-          element={
-            <div className="font-montserrat text-2xl font-bold text-gray-400">
-              Dashboard - Coming Soon
-            </div>
-          }
+          path={ROUTES.dashboard}
+          element={<div className="text-2xl font-bold text-gray-400">Dashboard - Coming Soon</div>}
         />
-        <Route path="/pro-verification" element={<ProVerification />} />
-        <Route path="/pro-verification/:contractorId" element={<VerificationDetails />} />
-        <Route path="/dispute-resolution" element={<DisputeResolution />} />
-        <Route path="/dispute-resolution/:id" element={<DisputeDetails />} />
+        <Route path={ROUTES.proVerification} element={<ProVerification />} />
+        <Route path={ROUTES.verificationDetails} element={<VerificationDetails />} />
+        <Route path={ROUTES.disputeResolution} element={<DisputeResolution />} />
+        <Route path={ROUTES.disputeDetails} element={<DisputeDetails />} />
         <Route
-          path="/user-management"
+          path={ROUTES.userManagement}
           element={
-            <div className="font-montserrat text-2xl font-bold text-gray-400">
-              User Management - Coming Soon
-            </div>
+            <div className="text-2xl font-bold text-gray-400">User Management - Coming Soon</div>
           }
         />
-        <Route path="/platform-settings" element={<PlatformSettings />} />
-        <Route path="/audit-log" element={<AuditLog />} />
-        <Route path="/home" element={<Navigate to="/pro-verification" replace />} />
+        <Route path={ROUTES.platformSettings} element={<PlatformSettings />} />
+        <Route path={ROUTES.auditLog} element={<AuditLog />} />
+        <Route path={ROUTES.home} element={<Navigate to={ROUTES.proVerification} replace />} />
       </Route>
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to={ROUTES.login} replace />} />
     </Routes>
   )
 }

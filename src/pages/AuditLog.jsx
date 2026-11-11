@@ -22,10 +22,7 @@ function Legend() {
       style={{ backgroundColor: HIGH_IMPACT_BG, borderColor: HIGH_IMPACT_BORDER }}
     >
       <Circle className="h-5 w-5 shrink-0" style={{ color: HIGH_IMPACT_BORDER }} />
-      <span
-        className="font-montserrat font-medium text-[#0F0F0F]"
-        style={{ fontSize: '16px', lineHeight: '16px' }}
-      >
+      <span className="font-medium text-ink" style={{ fontSize: '16px', lineHeight: '16px' }}>
         Red-highlighted fields represent high-impact actions.
       </span>
     </div>
@@ -94,16 +91,10 @@ export default function AuditLog() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col gap-3">
-        <h1
-          className="font-montserrat font-extrabold text-[#0F0F0F]"
-          style={{ fontSize: '40px', lineHeight: '40px' }}
-        >
+        <h1 className="font-extrabold text-ink" style={{ fontSize: '40px', lineHeight: '40px' }}>
           Audit Logs
         </h1>
-        <p
-          className="font-montserrat font-semibold text-[#6A6A6A]"
-          style={{ fontSize: '24px', lineHeight: '24px' }}
-        >
+        <p className="font-semibold text-muted" style={{ fontSize: '24px', lineHeight: '24px' }}>
           Stay informed about every action and change made across the platform.
         </p>
       </div>
@@ -122,7 +113,7 @@ export default function AuditLog() {
                 boxShadow: '0px 0px 0px 1px #E5E5E5, 0px 1px 3px 0px rgba(0,0,0,0.06)',
               }}
             >
-              <Search className="h-6 w-6 text-[#6A6A6A]" />
+              <Search className="h-6 w-6 text-muted" />
               <input
                 type="text"
                 placeholder="Search"
@@ -131,7 +122,7 @@ export default function AuditLog() {
                   setSearch(e.target.value)
                   setPage(1)
                 }}
-                className="flex-1 bg-transparent font-montserrat text-sm text-[#0F0F0F] outline-none placeholder:text-[#6A6A6A]"
+                className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
               />
             </div>
 
@@ -139,14 +130,11 @@ export default function AuditLog() {
               <button
                 type="button"
                 onClick={() => setFilterOpen((v) => !v)}
-                className="flex items-center justify-center gap-2 rounded-xl border transition-colors hover:bg-[#ECF5FF]"
+                className="flex items-center justify-center gap-2 rounded-xl border transition-colors hover:bg-primary-soft"
                 style={{ height: '56px', width: '157px', borderColor: '#0067DE' }}
               >
                 <SlidersHorizontal className="h-6 w-6" style={{ color: '#0052B0' }} />
-                <span
-                  className="font-montserrat font-bold"
-                  style={{ fontSize: '18px', color: '#0052B0' }}
-                >
+                <span className="font-bold" style={{ fontSize: '18px', color: '#0052B0' }}>
                   Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
                 </span>
               </button>
@@ -161,10 +149,7 @@ export default function AuditLog() {
                     boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.08)',
                   }}
                 >
-                  <span
-                    className="px-1 font-montserrat font-semibold text-[#6A6A6A]"
-                    style={{ fontSize: '12px' }}
-                  >
+                  <span className="px-1 font-semibold text-muted" style={{ fontSize: '12px' }}>
                     Module
                   </span>
                   {AUDIT_MODULES.map((name) => {
@@ -177,12 +162,12 @@ export default function AuditLog() {
                         className="flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-left hover:bg-gray-50"
                       >
                         <span
-                          className={`font-montserrat ${checked ? 'font-semibold text-[#0067DE]' : 'font-medium text-[#0F0F0F]'}`}
+                          className={`${checked ? 'font-semibold text-primary' : 'font-medium text-ink'}`}
                           style={{ fontSize: '14px' }}
                         >
                           {name}
                         </span>
-                        {checked && <Check className="h-4 w-4 text-[#0067DE]" strokeWidth={3} />}
+                        {checked && <Check className="h-4 w-4 text-primary" strokeWidth={3} />}
                       </button>
                     )
                   })}
@@ -197,7 +182,7 @@ export default function AuditLog() {
                     style={{ borderTop: '1px solid #D9D9D9' }}
                   >
                     <span
-                      className={`font-montserrat ${highImpactOnly ? 'font-semibold' : 'font-medium'}`}
+                      className={`${highImpactOnly ? 'font-semibold' : 'font-medium'}`}
                       style={{ fontSize: '14px', color: HIGH_IMPACT_BORDER }}
                     >
                       High-impact only
@@ -215,7 +200,7 @@ export default function AuditLog() {
                     <button
                       type="button"
                       onClick={clearFilters}
-                      className="rounded-lg px-2 py-2 text-left font-montserrat font-semibold text-[#6A6A6A] hover:bg-gray-50"
+                      className="rounded-lg px-2 py-2 text-left font-semibold text-muted hover:bg-gray-50"
                       style={{ fontSize: '14px' }}
                     >
                       Clear all
@@ -242,7 +227,7 @@ export default function AuditLog() {
                   {COLUMNS.map((col) => (
                     <th
                       key={col.key}
-                      className="text-center font-montserrat font-medium text-[#0F0F0F]"
+                      className="text-center font-medium text-ink"
                       style={{
                         height: '48px',
                         backgroundColor: '#FAFAFA',
@@ -279,25 +264,25 @@ export default function AuditLog() {
                   return (
                     <tr key={log.id}>
                       <td
-                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        className="font-medium text-ink"
                         style={{ ...cellStyle, fontSize: '14px' }}
                       >
                         {log.timestamp}
                       </td>
                       <td
-                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        className="font-medium text-ink"
                         style={{ ...cellStyle, fontSize: '14px' }}
                       >
                         {log.actor}
                       </td>
                       <td
-                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        className="font-medium text-ink"
                         style={{ ...cellStyle, fontSize: '14px' }}
                       >
                         {log.module}
                       </td>
                       <td
-                        className="font-montserrat font-medium"
+                        className="font-medium"
                         style={{
                           ...cellStyle,
                           fontSize: '14px',
@@ -308,7 +293,7 @@ export default function AuditLog() {
                         {log.action}
                       </td>
                       <td
-                        className="font-montserrat font-medium text-[#0F0F0F]"
+                        className="font-medium text-ink"
                         style={{
                           ...cellStyle,
                           fontSize: '12px',
@@ -325,7 +310,7 @@ export default function AuditLog() {
                   <tr>
                     <td
                       colSpan={COLUMNS.length}
-                      className="px-4 py-10 text-center font-montserrat text-sm text-[#6A6A6A]"
+                      className="px-4 py-10 text-center text-sm text-muted"
                       style={{ borderBottom: '1px solid #D9D9D9' }}
                     >
                       No results found.
@@ -357,10 +342,7 @@ export default function AuditLog() {
                     borderRight: '1px solid #D9D9D9',
                   }}
                 >
-                  <span
-                    className="font-montserrat font-semibold text-[#6A6A6A]"
-                    style={{ fontSize: '14px' }}
-                  >
+                  <span className="font-semibold text-muted" style={{ fontSize: '14px' }}>
                     Per page
                   </span>
                 </div>
@@ -370,14 +352,11 @@ export default function AuditLog() {
                   className="flex items-center justify-center gap-1"
                   style={{ height: '100%', padding: '8px 13px 8px 12px' }}
                 >
-                  <span
-                    className="font-montserrat font-medium text-[#0F0F0F]"
-                    style={{ fontSize: '14px' }}
-                  >
+                  <span className="font-medium text-ink" style={{ fontSize: '14px' }}>
                     {perPage}
                   </span>
                   <ChevronDown
-                    className="h-5 w-5 text-[#6A6A6A] transition-transform"
+                    className="h-5 w-5 text-muted transition-transform"
                     style={{ transform: perPageOpen ? 'rotate(180deg)' : 'none' }}
                   />
                 </button>
@@ -396,10 +375,8 @@ export default function AuditLog() {
                       <button
                         key={opt}
                         onClick={() => changePerPage(opt)}
-                        className={`w-full px-3 py-2 text-left font-montserrat hover:bg-gray-50 ${
-                          opt === perPage
-                            ? 'font-semibold text-[#0067DE]'
-                            : 'font-medium text-[#0F0F0F]'
+                        className={`w-full px-3 py-2 text-left hover:bg-gray-50 ${
+                          opt === perPage ? 'font-semibold text-primary' : 'font-medium text-ink'
                         }`}
                         style={{ fontSize: '14px' }}
                       >
@@ -415,7 +392,7 @@ export default function AuditLog() {
                 type="button"
                 onClick={goPrev}
                 disabled={currentPage <= 1}
-                className="flex items-center justify-center rounded-lg font-montserrat font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 style={{
                   height: '40px',
                   padding: '8px 16px',
@@ -430,10 +407,7 @@ export default function AuditLog() {
               </button>
 
               {/* Page indicator */}
-              <span
-                className="font-montserrat font-medium text-[#6A6A6A]"
-                style={{ fontSize: '14px' }}
-              >
+              <span className="font-medium text-muted" style={{ fontSize: '14px' }}>
                 Page {currentPage} of {totalPages}
               </span>
 
@@ -442,7 +416,7 @@ export default function AuditLog() {
                 type="button"
                 onClick={goNext}
                 disabled={currentPage >= totalPages}
-                className="flex items-center justify-center rounded-lg font-montserrat font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 style={{
                   height: '40px',
                   padding: '8px 16px',

@@ -15,6 +15,10 @@ import {
 } from 'lucide-react'
 import { apiRequest, BASE_URL } from '../config/api'
 import { useApiResource } from '../hooks/useApiResource'
+import { ROUTES } from '../config/routes'
+import { ENDPOINTS } from '../config/endpoints'
+import { formatDateTime, formatTime, parseDate } from '../utils/format'
+import { centsToMoney, formatMoney, moneyToCents } from '../utils/money'
 
 // `total` is what the customer paid; `proNet` is what the pro would actually receive once the
 // platform's cut is taken — 12%, or 7% for a Pro+ pro — so the copy states the real figures.
@@ -66,54 +70,11 @@ const OUTCOME_BY_ACTION = {
   CUSTOM_SPLIT: 'CUSTOM_SPLIT',
 }
 
-function parseDate(value) {
-  if (!value) return null
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-/** "02:45 PM" — the timeline and location history both use this shape. */
-function formatTime(value) {
-  const date = parseDate(value)
-  if (!date) return null
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
-}
-
-/** "Today, 11:30 AM" for a case raised today, otherwise "Jul 7, 2024, 11:30 AM". */
-function formatCaseDate(value) {
-  const date = parseDate(value)
-  if (!date) return '—'
-  const time = formatTime(value)
-  if (date.toDateString() === new Date().toDateString()) return `Today, ${time}`
-  const day = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  return `${day}, ${time}`
-}
-
-function formatMoney(amount) {
-  if (amount == null) return '—'
-  return `$${Number(amount).toFixed(2)}`
-}
-
-function centsToMoney(cents) {
-  if (cents == null) return ''
-  return `$${(cents / 100).toFixed(2)}`
-}
-
-/** Accepts "$120.00", "120", "120.5". Null for anything blank or unparseable. */
-function moneyToCents(input) {
-  const cleaned = String(input ?? '')
-    .replace(/[^0-9.]/g, '')
-    .trim()
-  if (!cleaned) return null
-  const value = Number(cleaned)
-  return Number.isFinite(value) ? Math.round(value * 100) : null
-}
-
 /** Media comes back as a storage key ("uploads/<file>"), served from /api/files. */
 function mediaUrl(filePath) {
   if (!filePath) return null
   if (/^https?:\/\//i.test(filePath)) return filePath
-  return `${BASE_URL}/api/files/${filePath.replace(/^uploads\//, '')}`
+  return `${BASE_URL}${ENDPOINTS.file(filePath)}`
 }
 
 /** The backend measures the arrival gap in km; the design states it in miles. */
@@ -141,15 +102,12 @@ function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {icon}
-          <h3
-            className="font-montserrat font-bold text-[#0F0F0F]"
-            style={{ fontSize: '20px', lineHeight: '20px' }}
-          >
+          <h3 className="font-bold text-ink" style={{ fontSize: '20px', lineHeight: '20px' }}>
             {title}
           </h3>
         </div>
         <div
-          className="flex flex-col overflow-hidden rounded-lg border border-[#D9D9D9] bg-white"
+          className="flex flex-col overflow-hidden rounded-lg border border-line bg-white"
           style={{ width: '32px' }}
         >
           <button
@@ -159,7 +117,7 @@ function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
             style={{ height: '32px', borderBottom: '1px solid #D9D9D9' }}
             aria-label="Expand"
           >
-            <Plus className="h-4 w-4 text-[#0F0F0F]" />
+            <Plus className="h-4 w-4 text-ink" />
           </button>
           <button
             type="button"
@@ -168,7 +126,7 @@ function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
             style={{ height: '32px' }}
             aria-label="Collapse"
           >
-            <Minus className="h-4 w-4 text-[#0F0F0F]" />
+            <Minus className="h-4 w-4 text-ink" />
           </button>
         </div>
       </div>
@@ -179,10 +137,7 @@ function CollapsibleCard({ icon, title, defaultOpen = true, children }) {
 
 function InfoLine({ children }) {
   return (
-    <p
-      className="font-montserrat font-semibold text-[#0F0F0F]"
-      style={{ fontSize: '16px', lineHeight: '20px' }}
-    >
+    <p className="font-semibold text-ink" style={{ fontSize: '16px', lineHeight: '20px' }}>
       {children}
     </p>
   )
@@ -194,7 +149,7 @@ function StatusPill({ resolved }) {
     : { bg: '#F7F7F7', border: '#6A6A6A', text: '#6A6A6A' }
   return (
     <span
-      className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-montserrat font-semibold"
+      className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-semibold"
       style={{
         backgroundColor: palette.bg,
         borderColor: palette.border,
@@ -237,13 +192,13 @@ function Timeline({ steps }) {
             </div>
             <div className="flex flex-col gap-2 pr-2">
               <span
-                className="font-montserrat font-medium text-[#6A6A6A]"
+                className="font-medium text-muted"
                 style={{ fontSize: '12px', lineHeight: '12px' }}
               >
                 {step.label}
               </span>
               <span
-                className="font-montserrat font-bold"
+                className="font-bold"
                 style={{
                   fontSize: '14px',
                   lineHeight: '14px',
@@ -279,21 +234,15 @@ function LocationItem({ item, isLast }) {
       </div>
       <div className="flex flex-1 flex-col gap-2 pb-4">
         <p
-          className="font-montserrat font-medium"
+          className="font-medium"
           style={{ fontSize: '20px', lineHeight: '20px', color: titleColor }}
         >
           {item.title}
         </p>
-        <p
-          className="font-montserrat font-semibold text-[#6A6A6A]"
-          style={{ fontSize: '16px', lineHeight: '16px' }}
-        >
+        <p className="font-semibold text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
           {item.subtitle}
         </p>
-        <p
-          className="font-montserrat font-semibold text-[#6A6A6A]"
-          style={{ fontSize: '16px', lineHeight: '16px' }}
-        >
+        <p className="font-semibold text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
           {item.address}
         </p>
       </div>
@@ -338,13 +287,13 @@ function SuccessModal({ open, onClose, autoDismissMs = 2500 }) {
           />
         </svg>
         <h3
-          className="mt-8 text-center font-montserrat font-extrabold text-[#0F0F0F]"
+          className="mt-8 text-center font-extrabold text-ink"
           style={{ fontSize: '32px', lineHeight: '1.2' }}
         >
           Action completed successfully!
         </h3>
         <p
-          className="mt-4 text-center font-montserrat font-medium text-[#6A6A6A]"
+          className="mt-4 text-center font-medium text-muted"
           style={{ fontSize: '18px', lineHeight: '1.5', maxWidth: '600px' }}
         >
           The action was completed successfully and now shared with the customer and pro.
@@ -360,15 +309,12 @@ function PaymentRow({ label, value, isBlue, isLast }) {
       className="flex items-center justify-between py-2"
       style={!isLast ? { borderBottom: '1px solid #D9D9D9' } : undefined}
     >
-      <span
-        className="font-montserrat font-medium text-[#6A6A6A]"
-        style={{ fontSize: '16px', lineHeight: '16px' }}
-      >
+      <span className="font-medium text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
         {label}
       </span>
       {typeof value === 'string' ? (
         <span
-          className="text-right font-montserrat font-bold"
+          className="text-right font-bold"
           style={{ fontSize: '16px', lineHeight: '16px', color: isBlue ? '#0052B0' : '#0F0F0F' }}
         >
           {value}
@@ -382,10 +328,7 @@ function PaymentRow({ label, value, isBlue, isLast }) {
 
 function BackLink({ onClick }) {
   return (
-    <button
-      onClick={onClick}
-      className="inline-flex items-center gap-2 font-montserrat font-semibold text-[#0067DE]"
-    >
+    <button onClick={onClick} className="inline-flex items-center gap-2 font-semibold text-primary">
       <ArrowLeft className="h-5 w-5" />
       Back
     </button>
@@ -401,7 +344,7 @@ export default function DisputeDetails() {
     loading,
     error,
     reload,
-  } = useApiResource(`/api/admin/disputes/${id}`, {
+  } = useApiResource(ENDPOINTS.dispute(id), {
     errorMessage: 'Could not load this dispute.',
   })
 
@@ -426,8 +369,8 @@ export default function DisputeDetails() {
   if (loading) {
     return (
       <div className="flex flex-col gap-4">
-        <BackLink onClick={() => navigate('/dispute-resolution')} />
-        <div className="flex items-center gap-2 font-montserrat text-[#6A6A6A]">
+        <BackLink onClick={() => navigate(ROUTES.disputeResolution)} />
+        <div className="flex items-center gap-2 text-muted">
           <Loader2 className="h-5 w-5 animate-spin" />
           Loading dispute…
         </div>
@@ -438,12 +381,12 @@ export default function DisputeDetails() {
   if (error || !dispute) {
     return (
       <div className="flex flex-col items-start gap-4">
-        <BackLink onClick={() => navigate('/dispute-resolution')} />
-        <p className="font-montserrat text-[#C20A0A]">{error || 'Dispute not found.'}</p>
+        <BackLink onClick={() => navigate(ROUTES.disputeResolution)} />
+        <p className="text-danger">{error || 'Dispute not found.'}</p>
         <button
           type="button"
           onClick={reload}
-          className="rounded-lg px-4 py-2 font-montserrat font-semibold transition-colors hover:bg-[#ECF5FF]"
+          className="rounded-lg px-4 py-2 font-semibold transition-colors hover:bg-primary-soft"
           style={{ border: '1px solid #0067DE', color: '#0052B0', fontSize: '14px' }}
         >
           Try again
@@ -554,7 +497,7 @@ export default function DisputeDetails() {
       body.proAmountCents = proCents
     }
     try {
-      const res = await apiRequest(`/api/admin/disputes/${id}/resolve`, {
+      const res = await apiRequest(ENDPOINTS.resolveDispute(id), {
         method: 'POST',
         body: JSON.stringify(body),
       })
@@ -574,24 +517,21 @@ export default function DisputeDetails() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/dispute-resolution')}
-              className="text-[#6A6A6A] transition-colors hover:text-[#0067DE]"
+              onClick={() => navigate(ROUTES.disputeResolution)}
+              className="text-muted transition-colors hover:text-primary"
               aria-label="Back"
             >
               <ArrowLeft className="h-7 w-7" />
             </button>
             <h1
-              className="font-montserrat font-extrabold text-[#0F0F0F]"
+              className="font-extrabold text-ink"
               style={{ fontSize: '40px', lineHeight: '40px' }}
             >
               Dispute Resolution
             </h1>
           </div>
-          <p
-            className="font-montserrat font-semibold text-[#6A6A6A]"
-            style={{ fontSize: '16px', lineHeight: '16px' }}
-          >
-            Case {dispute.caseId} - {formatCaseDate(dispute.createdAt)}
+          <p className="font-semibold text-muted" style={{ fontSize: '16px', lineHeight: '16px' }}>
+            Case {dispute.caseId} - {formatDateTime(dispute.createdAt)}
           </p>
         </div>
         <StatusPill resolved={isResolved} />
@@ -602,7 +542,7 @@ export default function DisputeDetails() {
         {/* Left column */}
         <div className="flex flex-col gap-6" style={{ width: '716px' }}>
           {/* Customer Info */}
-          <CollapsibleCard icon={<User className="h-6 w-6 text-[#0F0F0F]" />} title="Customer Info">
+          <CollapsibleCard icon={<User className="h-6 w-6 text-ink" />} title="Customer Info">
             <div className="flex flex-col gap-4">
               <InfoLine>Customer Name: {dispute.customerInfo?.name || '—'}</InfoLine>
               <InfoLine>Phone Number: {dispute.customerInfo?.phone || '—'}</InfoLine>
@@ -611,7 +551,7 @@ export default function DisputeDetails() {
           </CollapsibleCard>
 
           {/* Pro Info */}
-          <CollapsibleCard icon={<Briefcase className="h-6 w-6 text-[#0F0F0F]" />} title="Pro Info">
+          <CollapsibleCard icon={<Briefcase className="h-6 w-6 text-ink" />} title="Pro Info">
             <div className="flex flex-col gap-4">
               {dispute.proInfo ? (
                 <>
@@ -627,26 +567,26 @@ export default function DisputeDetails() {
 
           {/* Dispute Details */}
           <CollapsibleCard
-            icon={<AlertCircle className="h-6 w-6 text-[#0F0F0F]" />}
+            icon={<AlertCircle className="h-6 w-6 text-ink" />}
             title="Dispute Details"
           >
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <p
-                  className="font-montserrat font-semibold text-[#6A6A6A]"
+                  className="font-semibold text-muted"
                   style={{ fontSize: '14px', lineHeight: '14px' }}
                 >
                   Service ID: Ser-
                   {dispute.disputeDetails?.serviceRequestId ?? dispute.serviceRequestId}
                 </p>
                 <p
-                  className="font-montserrat font-semibold text-[#6A6A6A]"
+                  className="font-semibold text-muted"
                   style={{ fontSize: '14px', lineHeight: '14px' }}
                 >
                   Case {dispute.disputeDetails?.caseId ?? dispute.caseId}
                 </p>
                 <p
-                  className="font-montserrat font-medium text-[#0F0F0F]"
+                  className="font-medium text-ink"
                   style={{ fontSize: '20px', lineHeight: '20px' }}
                 >
                   {dispute.disputeDetails?.reason || '—'}
@@ -679,18 +619,12 @@ export default function DisputeDetails() {
           </CollapsibleCard>
 
           {/* Service Timeline */}
-          <CollapsibleCard
-            icon={<Clock className="h-6 w-6 text-[#0F0F0F]" />}
-            title="Service Timeline"
-          >
+          <CollapsibleCard icon={<Clock className="h-6 w-6 text-ink" />} title="Service Timeline">
             <Timeline steps={timelineSteps} />
           </CollapsibleCard>
 
           {/* Location History */}
-          <CollapsibleCard
-            icon={<MapPin className="h-6 w-6 text-[#0F0F0F]" />}
-            title="Location History"
-          >
+          <CollapsibleCard icon={<MapPin className="h-6 w-6 text-ink" />} title="Location History">
             <div className="flex flex-col">
               {locationItems.length > 0 ? (
                 locationItems.map((item, idx) => (
@@ -701,10 +635,7 @@ export default function DisputeDetails() {
                   />
                 ))
               ) : (
-                <p
-                  className="font-montserrat font-semibold text-[#6A6A6A]"
-                  style={{ fontSize: '16px' }}
-                >
+                <p className="font-semibold text-muted" style={{ fontSize: '16px' }}>
                   No location was recorded for this job.
                 </p>
               )}
@@ -713,10 +644,10 @@ export default function DisputeDetails() {
 
           {/* Payment Details */}
           <CollapsibleCard
-            icon={<CreditCard className="h-6 w-6 text-[#0F0F0F]" />}
+            icon={<CreditCard className="h-6 w-6 text-ink" />}
             title="Payment Details"
           >
-            <div className="flex flex-col rounded-xl border border-[#D9D9D9] px-3 py-4">
+            <div className="flex flex-col rounded-xl border border-line px-3 py-4">
               <PaymentRow label="Total paid:" value={totalPaid} isBlue />
               <PaymentRow label="Method:" value={payment?.method || 'Online'} />
               <PaymentRow label="Charged at:" value={formatTime(payment?.chargedAt) ?? '—'} />
@@ -731,7 +662,7 @@ export default function DisputeDetails() {
                     : { bg: '#FFF4F0', border: '#CB3904', text: '#CB3904' }
                   return (
                     <span
-                      className="inline-flex items-center rounded-lg border px-2 py-2 font-montserrat font-semibold"
+                      className="inline-flex items-center rounded-lg border px-2 py-2 font-semibold"
                       style={{
                         backgroundColor: palette.bg,
                         borderColor: palette.border,
@@ -749,12 +680,9 @@ export default function DisputeDetails() {
         </div>
 
         {/* Right column — Resolution Actions */}
-        <div className="rounded-3xl bg-[#F7F7F7] px-4 py-6" style={{ width: '320px' }}>
+        <div className="rounded-3xl bg-surface-muted px-4 py-6" style={{ width: '320px' }}>
           <div className="flex flex-col gap-6">
-            <h3
-              className="font-montserrat font-bold text-[#0F0F0F]"
-              style={{ fontSize: '20px', lineHeight: '20px' }}
-            >
+            <h3 className="font-bold text-ink" style={{ fontSize: '20px', lineHeight: '20px' }}>
               Resolution Actions
             </h3>
             <div className="flex flex-col gap-4">
@@ -791,14 +719,14 @@ export default function DisputeDetails() {
                   >
                     <div className="flex flex-col gap-2">
                       <span
-                        className="font-montserrat font-semibold text-[#0F0F0F]"
+                        className="font-semibold text-ink"
                         style={{ fontSize: '16px', lineHeight: '16px' }}
                       >
                         {action.title}
                       </span>
                       {action.subtitle && (
                         <span
-                          className="font-montserrat font-medium text-[#6A6A6A]"
+                          className="font-medium text-muted"
                           style={{ fontSize: '14px', lineHeight: '14px' }}
                         >
                           {action.subtitle}
@@ -809,7 +737,7 @@ export default function DisputeDetails() {
                         <div className="mt-2 flex flex-col gap-4" style={{ width: '272px' }}>
                           <div className="flex flex-col gap-2">
                             <label
-                              className="font-montserrat font-semibold text-[#0F0F0F]"
+                              className="font-semibold text-ink"
                               style={{ fontSize: '14px', lineHeight: '14px' }}
                             >
                               Consumer Refund Amount
@@ -823,13 +751,13 @@ export default function DisputeDetails() {
                               onClick={(e) => e.stopPropagation()}
                               readOnly={isResolved}
                               placeholder="Enter custom amount"
-                              className="rounded-lg border bg-white px-2 py-3 font-montserrat text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] read-only:text-[#6A6A6A] focus:border-[#0067DE]"
+                              className="rounded-lg border bg-white px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted read-only:text-muted focus:border-primary"
                               style={{ borderColor: '#D9D9D9', fontSize: '14px' }}
                             />
                           </div>
                           <div className="flex flex-col gap-2">
                             <label
-                              className="font-montserrat font-semibold text-[#0F0F0F]"
+                              className="font-semibold text-ink"
                               style={{ fontSize: '14px', lineHeight: '14px' }}
                             >
                               Pro Refund Amount
@@ -843,13 +771,13 @@ export default function DisputeDetails() {
                               onClick={(e) => e.stopPropagation()}
                               readOnly={isResolved}
                               placeholder="Enter custom amount"
-                              className="rounded-lg border bg-white px-2 py-3 font-montserrat text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] read-only:text-[#6A6A6A] focus:border-[#0067DE]"
+                              className="rounded-lg border bg-white px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted read-only:text-muted focus:border-primary"
                               style={{ borderColor: '#D9D9D9', fontSize: '14px' }}
                             />
                           </div>
                           {splitError && (
                             <p
-                              className="font-montserrat font-medium text-[#C20A0A]"
+                              className="font-medium text-danger"
                               style={{ fontSize: '12px', lineHeight: '1.4' }}
                             >
                               {splitError}
@@ -865,15 +793,15 @@ export default function DisputeDetails() {
               {/* Admin note */}
               <div className="flex flex-col gap-3" style={{ width: '288px' }}>
                 <label
-                  className="font-montserrat font-medium text-[#0F0F0F]"
+                  className="font-medium text-ink"
                   style={{ fontSize: '16px', lineHeight: '16px' }}
                 >
-                  Admin Note<span className="text-[#C20A0A]">*</span>
+                  Admin Note<span className="text-danger">*</span>
                 </label>
                 {showRecordedNote ? (
                   <div className="rounded-lg border px-2 py-3" style={{ borderColor: '#D9D9D9' }}>
                     <p
-                      className="font-montserrat font-normal text-[#6A6A6A]"
+                      className="font-normal text-muted"
                       style={{ fontSize: '14px', lineHeight: '1.5' }}
                     >
                       {resolutionReason || adminNote || '—'}
@@ -884,7 +812,7 @@ export default function DisputeDetails() {
                     value={adminNote}
                     onChange={(e) => setAdminNote(e.target.value)}
                     placeholder="Document your reasoning for this action.."
-                    className="rounded-lg border px-2 py-3 font-montserrat text-[#0F0F0F] outline-none transition-colors placeholder:text-[#6A6A6A] focus:border-[#0067DE]"
+                    className="rounded-lg border px-2 py-3 text-ink outline-none transition-colors placeholder:text-muted focus:border-primary"
                     style={{
                       height: '133px',
                       borderColor: '#D9D9D9',
@@ -900,10 +828,7 @@ export default function DisputeDetails() {
               {!isResolved && (
                 <>
                   {submitError && (
-                    <p
-                      className="font-montserrat text-[#C20A0A]"
-                      style={{ fontSize: '14px', width: '288px' }}
-                    >
+                    <p className="text-danger" style={{ fontSize: '14px', width: '288px' }}>
                       {submitError}
                     </p>
                   )}
@@ -911,7 +836,7 @@ export default function DisputeDetails() {
                     type="button"
                     disabled={!canConfirm}
                     onClick={confirmDecision}
-                    className="flex items-center justify-center gap-2 rounded-xl font-montserrat font-bold transition-colors"
+                    className="flex items-center justify-center gap-2 rounded-xl font-bold transition-colors"
                     style={{
                       height: '56px',
                       width: '288px',
@@ -935,7 +860,7 @@ export default function DisputeDetails() {
         open={successOpen}
         onClose={() => {
           setSuccessOpen(false)
-          navigate('/dispute-resolution')
+          navigate(ROUTES.disputeResolution)
         }}
       />
     </div>

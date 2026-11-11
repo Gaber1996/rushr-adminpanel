@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { clearSession } from '../lib/session'
+import { ROUTES } from '../config/routes'
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -11,12 +12,12 @@ import {
 } from 'lucide-react'
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-  { label: 'Pro Verification', icon: ShieldCheck, path: '/pro-verification' },
-  { label: 'Dispute Resolution', icon: MessageSquareWarning, path: '/dispute-resolution' },
-  { label: 'User Management', icon: Users, path: '/user-management' },
-  { label: 'Platform Settings', icon: Settings, path: '/platform-settings' },
-  { label: 'Audit Log', icon: ClipboardList, path: '/audit-log' },
+  { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.dashboard },
+  { label: 'Pro Verification', icon: ShieldCheck, path: ROUTES.proVerification },
+  { label: 'Dispute Resolution', icon: MessageSquareWarning, path: ROUTES.disputeResolution },
+  { label: 'User Management', icon: Users, path: ROUTES.userManagement },
+  { label: 'Platform Settings', icon: Settings, path: ROUTES.platformSettings },
+  { label: 'Audit Log', icon: ClipboardList, path: ROUTES.auditLog },
 ]
 
 export default function Sidebar() {
@@ -25,7 +26,7 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     clearSession()
-    navigate('/login')
+    navigate(ROUTES.login)
   }
 
   return (
@@ -39,13 +40,13 @@ export default function Sidebar() {
                 onClick={() => navigate(item.path)}
                 className={`flex w-full items-center gap-2 rounded-lg px-[10px] py-[8px] transition-colors ${
                   isActive
-                    ? 'bg-[#ECF5FF] font-semibold text-[#0067DE]'
-                    : 'text-[#6A6A6A] hover:bg-gray-50'
+                    ? 'bg-primary-soft font-semibold text-primary'
+                    : 'text-muted hover:bg-gray-50'
                 }`}
                 style={{ height: '40px' }}
               >
                 <item.icon className="h-6 w-6 flex-shrink-0" />
-                <span className="font-montserrat text-base">{item.label}</span>
+                <span className="text-base">{item.label}</span>
               </button>
             </div>
           )
@@ -55,11 +56,11 @@ export default function Sidebar() {
       <div className="px-[14px] py-[16px]">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-2 rounded-lg px-[10px] py-[8px] text-[#C20A0A] transition-colors hover:bg-red-50"
+          className="flex w-full items-center gap-2 rounded-lg px-[10px] py-[8px] text-danger transition-colors hover:bg-red-50"
           style={{ height: '40px' }}
         >
           <LogOut className="h-6 w-6 flex-shrink-0" />
-          <span className="font-montserrat text-base font-semibold">Log Out</span>
+          <span className="text-base font-semibold">Log Out</span>
         </button>
       </div>
     </aside>

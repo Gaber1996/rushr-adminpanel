@@ -4,6 +4,8 @@ import { Search, Eye, Clock, Check, ChevronDown, Loader2 } from 'lucide-react'
 import emptyFolder from '../assets/empty-folder.png'
 import { useApiResource } from '../hooks/useApiResource'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
+import { toDisputeDetails } from '../config/routes'
+import { ENDPOINTS } from '../config/endpoints'
 
 const PER_PAGE_OPTIONS = [10, 20, 50]
 
@@ -17,7 +19,7 @@ function StatusBadge({ status }) {
   if (isResolved(status)) {
     return (
       <span
-        className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-montserrat font-semibold"
+        className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-semibold"
         style={{
           backgroundColor: '#EFFFF5',
           borderColor: '#00861D',
@@ -32,7 +34,7 @@ function StatusBadge({ status }) {
   }
   return (
     <span
-      className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-montserrat font-semibold"
+      className="inline-flex items-center gap-2 rounded-lg border px-2 py-2 font-semibold"
       style={{
         backgroundColor: '#F7F7F7',
         borderColor: '#6A6A6A',
@@ -64,15 +66,10 @@ export default function DisputeResolution() {
 
   // One page of disputes at a time — Next/Prev and the per-page dropdown each refetch
   // rather than re-slicing a local list.
-  const params = new URLSearchParams({
-    page: String(page - 1), // the API is zero-based
-    size: String(perPage),
-  })
-  if (debouncedSearch) params.set('search', debouncedSearch)
-
-  const { data, loading, error, reload } = useApiResource(`/api/admin/disputes/paged?${params}`, {
-    errorMessage: 'Could not load disputes.',
-  })
+  const { data, loading, error, reload } = useApiResource(
+    ENDPOINTS.disputesPage({ page, size: perPage, search: debouncedSearch }),
+    { errorMessage: 'Could not load disputes.' }
+  )
   const rows = data?.content ?? []
   const totalPages = Math.max(1, data?.totalPages ?? 1)
 
@@ -98,10 +95,7 @@ export default function DisputeResolution() {
   if (!loading && !error && rows.length === 0 && !debouncedSearch) {
     return (
       <div className="flex h-full flex-col">
-        <h1
-          className="font-montserrat font-extrabold text-[#0F0F0F]"
-          style={{ fontSize: '40px', lineHeight: '40px' }}
-        >
+        <h1 className="font-extrabold text-ink" style={{ fontSize: '40px', lineHeight: '40px' }}>
           Dispute Resolution
         </h1>
         <div className="flex flex-1 flex-col items-center justify-center gap-2">
@@ -112,7 +106,7 @@ export default function DisputeResolution() {
             style={{ width: '390px', height: '390px' }}
           />
           <p
-            className="text-center font-montserrat font-semibold text-[#0F0F0F]"
+            className="text-center font-semibold text-ink"
             style={{ fontSize: '24px', lineHeight: '24px' }}
           >
             There is no <span className="font-semibold">Dispute Resolution</span> yet.
@@ -125,10 +119,7 @@ export default function DisputeResolution() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <h1
-        className="font-montserrat font-extrabold text-[#0F0F0F]"
-        style={{ fontSize: '40px', lineHeight: '40px' }}
-      >
+      <h1 className="font-extrabold text-ink" style={{ fontSize: '40px', lineHeight: '40px' }}>
         Dispute Resolution
       </h1>
 
@@ -141,13 +132,13 @@ export default function DisputeResolution() {
           boxShadow: '0px 0px 0px 1px #E5E5E5, 0px 1px 3px 0px rgba(0,0,0,0.06)',
         }}
       >
-        <Search className="h-6 w-6 text-[#6A6A6A]" />
+        <Search className="h-6 w-6 text-muted" />
         <input
           type="text"
           placeholder="Search by dispute ID, customer or pro name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent font-montserrat text-sm text-[#0F0F0F] outline-none placeholder:text-[#6A6A6A]"
+          className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-muted"
         />
       </div>
 
@@ -179,7 +170,7 @@ export default function DisputeResolution() {
               ].map((label) => (
                 <th
                   key={label}
-                  className="text-center font-montserrat font-medium text-[#0F0F0F]"
+                  className="text-center font-medium text-ink"
                   style={{
                     height: '48px',
                     backgroundColor: '#FAFAFA',
@@ -201,7 +192,7 @@ export default function DisputeResolution() {
                 return (
                   <tr key={d.id}>
                     <td
-                      className="text-center font-montserrat font-semibold text-[#0F0F0F]"
+                      className="text-center font-semibold text-ink"
                       style={{
                         height: '56px',
                         backgroundColor: zebra,
@@ -213,7 +204,7 @@ export default function DisputeResolution() {
                       {d.caseId}
                     </td>
                     <td
-                      className="text-center font-montserrat font-semibold text-[#0F0F0F]"
+                      className="text-center font-semibold text-ink"
                       style={{
                         height: '56px',
                         backgroundColor: zebra,
@@ -225,7 +216,7 @@ export default function DisputeResolution() {
                       {d.consumerName}
                     </td>
                     <td
-                      className="text-center font-montserrat font-semibold text-[#0F0F0F]"
+                      className="text-center font-semibold text-ink"
                       style={{
                         height: '56px',
                         backgroundColor: zebra,
@@ -238,7 +229,7 @@ export default function DisputeResolution() {
                       {d.contractorName || '—'}
                     </td>
                     <td
-                      className="text-center font-montserrat font-semibold text-[#0F0F0F]"
+                      className="text-center font-semibold text-ink"
                       style={{
                         height: '56px',
                         backgroundColor: zebra,
@@ -250,7 +241,7 @@ export default function DisputeResolution() {
                       {d.categoryName || '—'}
                     </td>
                     <td
-                      className="font-montserrat font-semibold text-[#0F0F0F]"
+                      className="font-semibold text-ink"
                       style={{
                         height: '56px',
                         backgroundColor: zebra,
@@ -285,8 +276,8 @@ export default function DisputeResolution() {
                       }}
                     >
                       <button
-                        onClick={() => navigate(`/dispute-resolution/${d.id}`)}
-                        className="inline-flex items-center gap-2 font-montserrat font-semibold text-[#0F0F0F] transition-colors hover:text-[#0067DE]"
+                        onClick={() => navigate(toDisputeDetails(d.id))}
+                        className="inline-flex items-center gap-2 font-semibold text-ink transition-colors hover:text-primary"
                         style={{ fontSize: '14px' }}
                       >
                         <Eye className="h-6 w-6" />
@@ -303,7 +294,7 @@ export default function DisputeResolution() {
                   className="px-4 py-10"
                   style={{ borderBottom: '1px solid #D9D9D9' }}
                 >
-                  <div className="flex items-center justify-center gap-2 font-montserrat text-sm text-[#6A6A6A]">
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     Loading disputes…
                   </div>
@@ -318,11 +309,11 @@ export default function DisputeResolution() {
                   style={{ borderBottom: '1px solid #D9D9D9' }}
                 >
                   <div className="flex flex-col items-center gap-3">
-                    <p className="font-montserrat text-sm text-[#C20A0A]">{error}</p>
+                    <p className="text-sm text-danger">{error}</p>
                     <button
                       type="button"
                       onClick={reload}
-                      className="rounded-lg px-4 py-2 font-montserrat font-semibold transition-colors hover:bg-[#ECF5FF]"
+                      className="rounded-lg px-4 py-2 font-semibold transition-colors hover:bg-primary-soft"
                       style={{ border: '1px solid #0067DE', color: '#0052B0', fontSize: '14px' }}
                     >
                       Try again
@@ -335,7 +326,7 @@ export default function DisputeResolution() {
               <tr>
                 <td
                   colSpan={7}
-                  className="px-4 py-10 text-center font-montserrat text-sm text-[#6A6A6A]"
+                  className="px-4 py-10 text-center text-sm text-muted"
                   style={{ borderBottom: '1px solid #D9D9D9' }}
                 >
                   No results found.
@@ -367,10 +358,7 @@ export default function DisputeResolution() {
                 borderRight: '1px solid #D9D9D9',
               }}
             >
-              <span
-                className="font-montserrat font-semibold text-[#6A6A6A]"
-                style={{ fontSize: '14px' }}
-              >
+              <span className="font-semibold text-muted" style={{ fontSize: '14px' }}>
                 Per page
               </span>
             </div>
@@ -380,14 +368,11 @@ export default function DisputeResolution() {
               className="flex items-center justify-center gap-1"
               style={{ height: '100%', padding: '8px 13px 8px 12px' }}
             >
-              <span
-                className="font-montserrat font-medium text-[#0F0F0F]"
-                style={{ fontSize: '14px' }}
-              >
+              <span className="font-medium text-ink" style={{ fontSize: '14px' }}>
                 {perPage}
               </span>
               <ChevronDown
-                className="h-5 w-5 text-[#6A6A6A] transition-transform"
+                className="h-5 w-5 text-muted transition-transform"
                 style={{ transform: perPageOpen ? 'rotate(180deg)' : 'none' }}
               />
             </button>
@@ -406,10 +391,8 @@ export default function DisputeResolution() {
                   <button
                     key={opt}
                     onClick={() => changePerPage(opt)}
-                    className={`w-full px-3 py-2 text-left font-montserrat hover:bg-gray-50 ${
-                      opt === perPage
-                        ? 'font-semibold text-[#0067DE]'
-                        : 'font-medium text-[#0F0F0F]'
+                    className={`w-full px-3 py-2 text-left hover:bg-gray-50 ${
+                      opt === perPage ? 'font-semibold text-primary' : 'font-medium text-ink'
                     }`}
                     style={{ fontSize: '14px' }}
                   >
@@ -425,7 +408,7 @@ export default function DisputeResolution() {
             type="button"
             onClick={goPrev}
             disabled={currentPage <= 1}
-            className="flex items-center justify-center rounded-lg font-montserrat font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             style={{
               height: '40px',
               padding: '8px 16px',
@@ -440,7 +423,7 @@ export default function DisputeResolution() {
           </button>
 
           {/* Page indicator */}
-          <span className="font-montserrat font-medium text-[#6A6A6A]" style={{ fontSize: '14px' }}>
+          <span className="font-medium text-muted" style={{ fontSize: '14px' }}>
             Page {currentPage} of {totalPages}
           </span>
 
@@ -449,7 +432,7 @@ export default function DisputeResolution() {
             type="button"
             onClick={goNext}
             disabled={currentPage >= totalPages}
-            className="flex items-center justify-center rounded-lg font-montserrat font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center justify-center rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
             style={{
               height: '40px',
               padding: '8px 16px',
