@@ -7,7 +7,7 @@ import { ROUTES } from '../config/routes'
 import { ENDPOINTS } from '../config/endpoints'
 import { AUTH_TEXT, COMMON_TEXT } from '../texts'
 import logo from '../assets/logo.png'
-import bgImage from '../assets/signin-bg.png'
+import bgImage from '../assets/signin-bg.webp'
 
 export default function SignIn() {
   const navigate = useNavigate()
