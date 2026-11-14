@@ -1,6 +1,7 @@
 // The one place that knows how the admin session is stored. Everything else asks this module.
 
-const TOKEN_KEY = 'token'
+/** localStorage key of the admin's JWT. The start-up skeleton script reads it too. */
+export const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
 
 export function getToken() {
@@ -16,8 +17,11 @@ export function getUser() {
   }
 }
 
-/** Reads the JWT `exp` claim (seconds). Null when the token is not a JWT or has no expiry. */
-function tokenExpiry(token) {
+// tokenExpiry and isTokenLive use nothing outside their own bodies: the build copies their source
+// into the start-up skeleton script (build/bootSkeletons.js), which runs before the app loads.
+
+/** Reads the JWT `exp` claim (seconds) as ms. Null when the token is not a JWT or has no expiry. */
+export function tokenExpiry(token) {
   try {
     const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
     const { exp } = JSON.parse(atob(payload))
@@ -27,12 +31,16 @@ function tokenExpiry(token) {
   }
 }
 
+/** True for a token that exists and, if it carries an expiry, has not reached it yet. */
+export function isTokenLive(token, now, expiryOf) {
+  if (!token) return false
+  const expiry = expiryOf(token)
+  return expiry === null || expiry > now
+}
+
 /** True when a token is stored and, if it carries an expiry, that expiry is still in the future. */
 export function isLoggedIn(now = Date.now()) {
-  const token = getToken()
-  if (!token) return false
-  const expiry = tokenExpiry(token)
-  return expiry === null || expiry > now
+  return isTokenLive(getToken(), now, tokenExpiry)
 }
 
 export function saveSession(user) {

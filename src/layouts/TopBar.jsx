@@ -49,6 +49,7 @@ export default function TopBar({ navOpen, onMenuClick, menuButtonRef }) {
       <div
         className="flex h-14 w-14 items-center justify-center rounded-full font-semibold text-white"
         style={{ backgroundColor: '#0067DE', fontSize: '24px' }}
+        data-initials
       >
         {initials}
       </div>

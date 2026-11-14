@@ -15,7 +15,9 @@ import { ROUTES } from './config/routes'
 import { NAVIGATION_TEXT } from './texts'
 
 function ProtectedRoute({ children }) {
-  if (!isLoggedIn()) {
+  // The build renders each page once, without a browser session, for the start-up skeletons
+  // (see src/boot); the real check runs in the browser.
+  if (!import.meta.env.SSR && !isLoggedIn()) {
     // Drop an expired token so it is not sent with the next sign-in.
     clearSession()
     return <Navigate to={ROUTES.login} replace />

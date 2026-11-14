@@ -1,10 +1,14 @@
 import { useState, useMemo } from 'react'
-import { SlidersHorizontal, Circle, Check } from 'lucide-react'
+import { SlidersHorizontal, Circle } from 'lucide-react'
 import { AUDIT_LOGS, AUDIT_MODULES } from '../data/auditLogs'
 import DataTable from '../components/ui/DataTable'
+import FilterMenu, { FilterLabel } from '../components/ui/FilterMenu'
+import Button from '../components/ui/Button'
+import { toggleItem } from '../utils/list'
 import PageHeader from '../components/ui/PageHeader'
 import Pagination from '../components/ui/Pagination'
 import { useClientPagination } from '../hooks/useClientPagination'
+import { matchesSearch } from '../utils/search'
 import SearchInput from '../components/ui/SearchInput'
 import { AUDIT_LOG_TEXT, COMMON_TEXT } from '../texts'
 
@@ -22,6 +26,7 @@ const COLUMNS = [
   {
     key: 'action',
     header: TEXT.columns.action,
+    minWidth: '180px',
     cellClassName: (log) =>
       `px-4 text-center text-[14px] font-medium leading-[1.4] ${log.highImpact ? 'text-danger' : 'text-ink'}`,
   },
@@ -49,23 +54,14 @@ function Legend() {
 
 export default function AuditLog() {
   const [search, setSearch] = useState('')
-  const [filterOpen, setFilterOpen] = useState(false)
   const [moduleFilter, setModuleFilter] = useState([])
   const [highImpactOnly, setHighImpactOnly] = useState(false)
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
     return AUDIT_LOGS.filter((log) => {
       if (highImpactOnly && !log.highImpact) return false
       if (moduleFilter.length > 0 && !moduleFilter.includes(log.module)) return false
-      if (!q) return true
-      return (
-        log.timestamp.toLowerCase().includes(q) ||
-        log.actor.toLowerCase().includes(q) ||
-        log.module.toLowerCase().includes(q) ||
-        log.action.toLowerCase().includes(q) ||
-        log.reason.toLowerCase().includes(q)
-      )
+      return matchesSearch(search, [log.timestamp, log.actor, log.module, log.action, log.reason])
     })
   }, [search, moduleFilter, highImpactOnly])
 
@@ -74,9 +70,7 @@ export default function AuditLog() {
   const activeFilterCount = moduleFilter.length + (highImpactOnly ? 1 : 0)
 
   function toggleModule(name) {
-    setModuleFilter((prev) =>
-      prev.includes(name) ? prev.filter((m) => m !== name) : [...prev, name]
-    )
+    setModuleFilter((prev) => toggleItem(prev, name))
     resetPage()
   }
 
@@ -113,89 +107,39 @@ export default function AuditLog() {
               className="flex-1"
             />
 
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setFilterOpen((v) => !v)}
-                className="flex items-center justify-center gap-2 rounded-xl border px-4 transition-colors hover:bg-primary-soft md:w-[157px] md:px-0"
-                style={{ height: '56px', borderColor: '#0067DE' }}
-              >
-                <SlidersHorizontal className="h-6 w-6" style={{ color: '#0052B0' }} />
-                <span className="font-bold" style={{ fontSize: '18px', color: '#0052B0' }}>
-                  {TEXT.filterLabel(activeFilterCount)}
-                </span>
-              </button>
-
-              {filterOpen && (
-                <div
-                  className="absolute right-0 z-10 flex flex-col gap-2 rounded-xl bg-white p-3"
-                  style={{
-                    top: '64px',
-                    minWidth: '240px',
-                    border: '1px solid #D9D9D9',
-                    boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.08)',
-                  }}
-                >
-                  <span className="px-1 font-semibold text-muted" style={{ fontSize: '12px' }}>
-                    {TEXT.moduleHeading}
-                  </span>
-                  {AUDIT_MODULES.map((name) => {
-                    const checked = moduleFilter.includes(name)
-                    return (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => toggleModule(name)}
-                        className="flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-left hover:bg-gray-50"
-                      >
-                        <span
-                          className={`${checked ? 'font-semibold text-primary' : 'font-medium text-ink'}`}
-                          style={{ fontSize: '14px' }}
-                        >
-                          {name}
-                        </span>
-                        {checked && <Check className="h-4 w-4 text-primary" strokeWidth={3} />}
-                      </button>
-                    )
-                  })}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHighImpactOnly((v) => !v)
-                      resetPage()
-                    }}
-                    className="flex items-center justify-between gap-2 rounded-lg px-2 py-2 text-left hover:bg-gray-50"
-                    style={{ borderTop: '1px solid #D9D9D9' }}
-                  >
-                    <span
-                      className={`${highImpactOnly ? 'font-semibold' : 'font-medium'}`}
-                      style={{ fontSize: '14px', color: HIGH_IMPACT_BORDER }}
-                    >
-                      {TEXT.highImpactOnly}
-                    </span>
-                    {highImpactOnly && (
-                      <Check
-                        className="h-4 w-4"
-                        style={{ color: HIGH_IMPACT_BORDER }}
-                        strokeWidth={3}
-                      />
-                    )}
-                  </button>
-
-                  {activeFilterCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={clearFilters}
-                      className="rounded-lg px-2 py-2 text-left font-semibold text-muted hover:bg-gray-50"
-                      style={{ fontSize: '14px' }}
-                    >
-                      {TEXT.clearAll}
-                    </button>
-                  )}
-                </div>
+            <FilterMenu
+              renderTrigger={(props) => (
+                <Button variant="secondary" size="fieldLarge" {...props}>
+                  <SlidersHorizontal className="h-6 w-6" aria-hidden="true" />
+                  <FilterLabel count={activeFilterCount} />
+                </Button>
               )}
-            </div>
+              sections={[
+                {
+                  heading: TEXT.moduleHeading,
+                  options: [
+                    ...AUDIT_MODULES.map((name) => ({
+                      key: name,
+                      label: name,
+                      checked: moduleFilter.includes(name),
+                      onToggle: () => toggleModule(name),
+                    })),
+                    {
+                      key: 'high-impact',
+                      label: TEXT.highImpactOnly,
+                      checked: highImpactOnly,
+                      tone: 'danger',
+                      separated: true,
+                      onToggle: () => {
+                        setHighImpactOnly((v) => !v)
+                        resetPage()
+                      },
+                    },
+                  ],
+                },
+              ]}
+              onClear={clearFilters}
+            />
           </div>
 
           <DataTable

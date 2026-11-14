@@ -8,8 +8,11 @@ export const COMMON_TEXT = {
   back: 'Back',
   cancel: 'Cancel',
   filter: 'Filter',
+  // The Filter button with how many filters are on: "Filter (2)".
+  filterWithCount: (count) => (count > 0 ? `Filter (${count})` : 'Filter'),
   review: 'Review',
   tryAgain: 'Try again',
+  clearAll: 'Clear all',
 
   // Search box (default placeholder)
   search: 'Search',

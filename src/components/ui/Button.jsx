@@ -24,6 +24,8 @@ const SIZES = {
   mdSemibold: 'h-12 gap-2 rounded-xl px-4 text-sm font-semibold',
   /** Same height as SearchInput, for a button beside it (Filter). */
   field: 'h-14 gap-2 rounded-xl px-4 text-base font-semibold',
+  /** Like `field` with the larger bold label (Audit Log filter). */
+  fieldLarge: 'h-14 gap-2 rounded-xl px-4 text-[18px] font-bold',
   sm: 'gap-2 rounded-lg px-4 py-2 text-[14px] font-semibold leading-normal',
 }
 

@@ -8,77 +8,96 @@ import { formatDate } from '../utils/format'
 import Button from '../components/ui/Button'
 import DataTable from '../components/ui/DataTable'
 import ErrorState from '../components/ui/ErrorState'
+import FilterMenu, { FilterLabel } from '../components/ui/FilterMenu'
 import { PaginationPlaceholder } from '../components/ui/Pagination'
 import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
 import VerificationStatusBadge from '../features/verification/VerificationStatusBadge'
+import { VERIFICATION_STATUS, stepStatus } from '../features/verification/verificationStatus'
+import { matchesSearch } from '../utils/search'
+import { toggleItem } from '../utils/list'
+import { DOC_TYPE_TO_STEP } from '../features/verification/documentTypes'
 import { COMMON_TEXT, VERIFICATION_TEXT } from '../texts'
 
 const TEXT = VERIFICATION_TEXT.queue
 const DOC_TYPES = VERIFICATION_TEXT.docTypes
 
+/** "First Last", skipping a missing part (the API sends null when a name is not set). */
+const fullName = (item) => [item.firstName, item.lastName].filter(Boolean).join(' ')
+
+const STEPS = Object.values(DOC_TYPE_TO_STEP)
+const FILTER_STATUSES = [
+  VERIFICATION_STATUS.PENDING,
+  VERIFICATION_STATUS.APPROVED,
+  VERIFICATION_STATUS.REJECTED,
+  VERIFICATION_STATUS.EXPIRED,
+]
+
 export default function ProVerification() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState([])
   const { data, loading, error } = useApiResource(ENDPOINTS.verificationQueue, {
     errorMessage: TEXT.loadError,
     networkErrorMessage: COMMON_TEXT.networkError,
   })
 
-  const filtered = (data ?? []).filter((item) => {
-    const name = `${item.firstName} ${item.lastName}`.toLowerCase()
-    return name.includes(search.toLowerCase())
-  })
+  const filtered = (data ?? []).filter(
+    (item) =>
+      matchesSearch(search, [fullName(item)]) &&
+      (statusFilter.length === 0 ||
+        STEPS.some((step) => statusFilter.includes(stepStatus(item, step))))
+  )
 
   // Cell renderer for one verification step's status chip.
   function stepBadge(step) {
     return function renderStepBadge(item) {
-      return (
-        <VerificationStatusBadge
-          marker="dot"
-          status={item.stepStatuses?.[step]?.status || 'PENDING'}
-        />
-      )
+      return <VerificationStatusBadge marker="dot" status={stepStatus(item, step)} />
     }
   }
 
   const columns = [
     {
       key: 'name',
+      minWidth: '200px',
       header: TEXT.nameColumn,
       sortIndicator: true,
       cellClassName: 'text-sm text-heading',
-      render: (item) => `${item.firstName} ${item.lastName}`,
+      render: fullName,
     },
     {
       key: 'govId',
+      width: '168px',
       header: DOC_TYPES.governmentId,
       sortIndicator: true,
-      render: stepBadge('GOV_ID'),
+      render: stepBadge(DOC_TYPE_TO_STEP.GOVERNMENT_ID),
     },
     {
       key: 'license',
+      width: '204px',
       header: DOC_TYPES.license,
       sortIndicator: true,
-      render: stepBadge('LICENSE'),
+      render: stepBadge(DOC_TYPE_TO_STEP.LICENSE),
     },
     {
       key: 'insurance',
+      width: '196px',
       header: DOC_TYPES.insurance,
       sortIndicator: true,
-      render: stepBadge('INSURANCE'),
+      render: stepBadge(DOC_TYPE_TO_STEP.INSURANCE),
     },
     {
       key: 'submitted',
+      width: '120px',
       header: TEXT.submittedColumn,
       cellClassName: 'text-sm text-muted',
       render: (item) => formatDate(item.submittedAt),
     },
     {
       key: 'action',
+      width: '110px',
       header: COMMON_TEXT.action,
       sortIndicator: true,
-      cardLabel: null,
       render: (item) => (
         <button
           type="button"
@@ -94,7 +113,7 @@ export default function ProVerification() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Export Report and Filter are not wired to the API yet — later. */}
+      {/* Export Report is not wired to the API yet — later. */}
       <PageHeader
         title={TEXT.title}
         subtitle={TEXT.subtitle}
@@ -104,10 +123,26 @@ export default function ProVerification() {
       {/* Search & Filter */}
       <div className="flex items-center gap-3 md:gap-6">
         <SearchInput value={search} onChange={setSearch} className="flex-1" />
-        <Button variant="outlinePrimary" size="field">
-          <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
-          {COMMON_TEXT.filter}
-        </Button>
+        <FilterMenu
+          renderTrigger={(props) => (
+            <Button variant="outlinePrimary" size="field" {...props}>
+              <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
+              <FilterLabel count={statusFilter.length} />
+            </Button>
+          )}
+          sections={[
+            {
+              heading: TEXT.filterHeading,
+              options: FILTER_STATUSES.map((status) => ({
+                key: status,
+                label: TEXT.filterStatus[status],
+                checked: statusFilter.includes(status),
+                onToggle: () => setStatusFilter((prev) => toggleItem(prev, status)),
+              })),
+            },
+          ]}
+          onClear={() => setStatusFilter([])}
+        />
       </div>
 
       {error ? (

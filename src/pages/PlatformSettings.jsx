@@ -13,6 +13,14 @@ import SearchInput from '../components/ui/SearchInput'
 import CategoryDialog from '../features/categories/CategoryDialog'
 import DeleteCategoryDialog from '../features/categories/DeleteCategoryDialog'
 import EditIcon from '../features/categories/EditIcon'
+import FilterMenu, { FilterLabel } from '../components/ui/FilterMenu'
+import { toggleItem } from '../utils/list'
+import {
+  NO_ISSUE_TYPES,
+  UPDATED_WITHIN_DAYS,
+  filterCategories,
+  issueTypeOptions,
+} from '../features/categories/categoryFilters'
 import { CATEGORIES_TEXT, COMMON_TEXT } from '../texts'
 
 const TEXT = CATEGORIES_TEXT
@@ -29,6 +37,8 @@ export default function PlatformSettings() {
     networkErrorMessage: COMMON_TEXT.networkError,
   })
   const [search, setSearch] = useState('')
+  const [issueTypeFilter, setIssueTypeFilter] = useState([])
+  const [updatedWithinDays, setUpdatedWithinDays] = useState(null)
   const [activeTab, setActiveTab] = useState('categories')
 
   // Modal states
@@ -98,9 +108,37 @@ export default function PlatformSettings() {
     }
   }
 
-  const filtered = (categories ?? []).filter(
-    (cat) => cat.active && cat.name.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = filterCategories(categories ?? [], {
+    search,
+    issueTypes: issueTypeFilter,
+    updatedWithinDays,
+  })
+  const activeFilterCount = issueTypeFilter.length + (updatedWithinDays === null ? 0 : 1)
+
+  const filterSections = [
+    {
+      heading: TEXT.filter.issueTypesHeading,
+      options: [
+        ...issueTypeOptions((categories ?? []).filter((cat) => cat.active)),
+        NO_ISSUE_TYPES,
+      ].map((type) => ({
+        key: type,
+        label: type === NO_ISSUE_TYPES ? TEXT.filter.noIssueTypes : type,
+        checked: issueTypeFilter.includes(type),
+        onToggle: () => setIssueTypeFilter((prev) => toggleItem(prev, type)),
+      })),
+    },
+    {
+      heading: TEXT.filter.updatedHeading,
+      // One choice at a time: picking the active one again turns it off.
+      options: UPDATED_WITHIN_DAYS.map((days) => ({
+        key: `updated-${days}`,
+        label: TEXT.filter.updatedWithin(days),
+        checked: updatedWithinDays === days,
+        onToggle: () => setUpdatedWithinDays((prev) => (prev === days ? null : days)),
+      })),
+    },
+  ]
 
   const tabs = [
     { key: 'categories', label: TEXT.tabs.categories },
@@ -111,6 +149,7 @@ export default function PlatformSettings() {
   const columns = [
     {
       key: 'name',
+      minWidth: '200px',
       header: TEXT.nameColumn,
       sortIndicator: true,
       cellClassName: 'text-sm text-heading',
@@ -118,21 +157,24 @@ export default function PlatformSettings() {
     },
     {
       key: 'issueTypes',
+      width: '382px',
       header: TEXT.issueTypesColumn,
       sortIndicator: true,
-      cellClassName: 'max-w-[350px] truncate text-sm text-muted',
-      render: (cat) => (cat.issueTypes || []).join(', '),
+      cellClassName: 'text-sm text-muted',
+      // One line, cut with "…" when the list is longer than the column.
+      render: (cat) => <div className="truncate">{(cat.issueTypes || []).join(', ')}</div>,
     },
     {
       key: 'updated',
+      width: '160px',
       header: TEXT.lastUpdateColumn,
       cellClassName: 'text-sm text-muted',
       render: (cat) => formatDate(cat.updatedAt),
     },
     {
       key: 'actions',
+      width: '200px',
       header: TEXT.actionsColumn,
-      cardLabel: null,
       render: (cat) => (
         <div className="flex items-center gap-5">
           <button
@@ -192,13 +234,21 @@ export default function PlatformSettings() {
       {/* Tab Content */}
       {activeTab === 'categories' ? (
         <>
-          {/* Filter is not wired to the API yet — later. */}
           <div className="flex items-center gap-3 md:gap-6">
             <SearchInput value={search} onChange={setSearch} className="flex-1" />
-            <Button variant="outlineAccent" size="field">
-              <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
-              {COMMON_TEXT.filter}
-            </Button>
+            <FilterMenu
+              renderTrigger={(props) => (
+                <Button variant="outlineAccent" size="field" {...props}>
+                  <SlidersHorizontal className="h-5 w-5" aria-hidden="true" />
+                  <FilterLabel count={activeFilterCount} />
+                </Button>
+              )}
+              sections={filterSections}
+              onClear={() => {
+                setIssueTypeFilter([])
+                setUpdatedWithinDays(null)
+              }}
+            />
           </div>
 
           {error ? (

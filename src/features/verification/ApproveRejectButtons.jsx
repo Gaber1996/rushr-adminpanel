@@ -1,13 +1,15 @@
 // Approve and Reject buttons for the selected document.
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { VERIFICATION_TEXT } from '../../texts'
+import { VERIFICATION_STATUS } from './verificationStatus'
 
 const TEXT = VERIFICATION_TEXT.details
 
 export default function ApproveRejectButtons({ selectedDoc, actionLoading, onApprove, onReject }) {
   const status = selectedDoc?.verificationStatus
-  const isApproved = status === 'APPROVED'
-  const isRejected = status === 'REJECTED' || status === 'EXPIRED'
+  const isApproved = status === VERIFICATION_STATUS.APPROVED
+  const isRejected =
+    status === VERIFICATION_STATUS.REJECTED || status === VERIFICATION_STATUS.EXPIRED
   const approveDisabled = !selectedDoc || actionLoading || isApproved
   const rejectDisabled = !selectedDoc || actionLoading || isRejected
 

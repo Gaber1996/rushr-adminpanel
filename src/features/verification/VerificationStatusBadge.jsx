@@ -1,41 +1,35 @@
 import { CheckCircle2, Clock, XCircle } from 'lucide-react'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { VERIFICATION_TEXT } from '../../texts'
+import { VERIFICATION_STATUS, normalizeStatus } from './verificationStatus'
 
 const STATUS_TEXT = VERIFICATION_TEXT.status
 
-// One entry per backend verification status. Anything unknown reads as pending.
+// How each verification status looks. Submitted and unknown statuses read as pending.
 // `glyph`/`dot` draw the small filled circle used in the queue table.
-const VERIFICATION_STATUS = {
-  APPROVED: {
+const STATUS_STYLES = {
+  [VERIFICATION_STATUS.APPROVED]: {
     tone: 'success',
     label: STATUS_TEXT.approved,
     Icon: CheckCircle2,
     glyph: '✓',
     dot: 'bg-emerald-600',
   },
-  REJECTED: {
+  [VERIFICATION_STATUS.REJECTED]: {
     tone: 'danger',
     label: STATUS_TEXT.rejected,
     Icon: XCircle,
     glyph: '✕',
     dot: 'bg-red-600',
   },
-  EXPIRED: {
+  [VERIFICATION_STATUS.EXPIRED]: {
     tone: 'danger',
     label: STATUS_TEXT.expired,
     Icon: XCircle,
     glyph: '✕',
     dot: 'bg-red-600',
   },
-  PENDING: {
-    tone: 'neutral',
-    label: STATUS_TEXT.pending,
-    Icon: Clock,
-    glyph: '◷',
-    dot: 'bg-gray-500',
-  },
-  SUBMITTED: {
+  [VERIFICATION_STATUS.PENDING]: {
     tone: 'neutral',
     label: STATUS_TEXT.pending,
     Icon: Clock,
@@ -45,7 +39,7 @@ const VERIFICATION_STATUS = {
 }
 
 export function verificationStatus(status) {
-  return VERIFICATION_STATUS[status] ?? VERIFICATION_STATUS.PENDING
+  return STATUS_STYLES[normalizeStatus(status)]
 }
 
 /**

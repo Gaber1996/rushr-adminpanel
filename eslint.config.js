@@ -31,6 +31,11 @@ export default [
     languageOptions: { globals: { ...globals.node } },
   },
   {
+    // Build plugins run in Node; the start-up script inside them runs in the browser.
+    files: ['build/**'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
     files: ['**/*.test.{js,jsx}', 'src/test/**'],
     languageOptions: { globals: { ...globals.node } },
   },

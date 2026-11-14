@@ -67,6 +67,7 @@ export default function DisputeResolution() {
     {
       key: 'reason',
       header: COMMON_TEXT.reason,
+      minWidth: '180px',
       cellClassName: 'p-2 text-[12px] font-semibold leading-normal text-ink',
       render: (d) => d.reason,
     },
@@ -76,7 +77,7 @@ export default function DisputeResolution() {
       width: '150px',
       cellClassName: 'px-4 text-center',
       render: (d) => (
-        <div className="flex items-center justify-end md:justify-center">
+        <div className="flex items-center justify-center">
           <DisputeStatusBadge status={d.status} />
         </div>
       ),
@@ -86,7 +87,6 @@ export default function DisputeResolution() {
       header: COMMON_TEXT.action,
       width: '130px',
       cellClassName: 'px-4 text-center',
-      cardLabel: null,
       render: (d) => (
         <button
           type="button"

@@ -25,6 +25,14 @@ export const CATEGORIES_TEXT = {
   delete: 'Delete',
   empty: 'No categories found.',
 
+  // Filter menu
+  filter: {
+    issueTypesHeading: 'Issue types',
+    noIssueTypes: 'No issue types',
+    updatedHeading: 'Last update',
+    updatedWithin: (days) => `Last ${days} days`,
+  },
+
   // Request errors
   addError: 'Failed to add category.',
   updateError: 'Failed to update category.',

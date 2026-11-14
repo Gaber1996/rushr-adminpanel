@@ -8,7 +8,6 @@ const columns = [
   {
     key: 'action',
     header: 'Action',
-    cardLabel: null,
     render: (r) => <button>Open {r.name}</button>,
   },
 ]
@@ -63,13 +62,10 @@ describe('DataTable', () => {
     expect(onRetry).toHaveBeenCalledOnce()
   })
 
-  it('also renders phone cards, labelling each field except label-less columns', () => {
+  it('renders only the table (no phone cards), in a sideways-scrolling wrapper', () => {
     render(<DataTable columns={columns} rows={rows} rowKey={(r) => r.id} />)
-    const cards = screen.getAllByRole('listitem')
-    expect(cards).toHaveLength(2)
-    expect(within(cards[0]).getByText('Name')).toBeInTheDocument()
-    expect(within(cards[0]).queryByText('Action')).not.toBeInTheDocument()
-    expect(within(cards[0]).getByRole('button', { name: 'Open Sara' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0)
+    expect(table().parentElement).toHaveClass('overflow-x-auto')
   })
 
   it('accepts a per-row cell class', () => {

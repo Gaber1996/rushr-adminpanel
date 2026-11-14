@@ -26,6 +26,14 @@ export const VERIFICATION_TEXT = {
     loading: 'Loading verification queue…',
     nameColumn: 'Name',
     submittedColumn: 'Submitted',
+    // Filter menu: show pros with at least one document in the chosen statuses.
+    filterHeading: 'Document status',
+    filterStatus: {
+      PENDING: 'Pending',
+      APPROVED: 'Approved',
+      REJECTED: 'Rejected',
+      EXPIRED: 'Expired',
+    },
   },
 
   // Details page (VerificationDetails)

@@ -11,7 +11,8 @@ import { COMMON_TEXT } from '../../texts'
 const VARIANTS = {
   simple: {
     container: 'overflow-hidden rounded-xl border border-gray-100 bg-white',
-    table: 'w-full',
+    // Its minimum width is the sum of the column widths (see tableMinWidth).
+    table: 'w-full table-fixed',
     headRow: 'border-b border-gray-100',
     th: 'px-4 py-4 text-left text-sm font-semibold text-muted',
     row: 'border-b border-gray-50 transition-colors hover:bg-gray-50/50',
@@ -22,8 +23,8 @@ const VARIANTS = {
   grid: {
     container:
       'overflow-hidden rounded-xl bg-white shadow-[0_0_0_1px_#ECECEE,0_1px_3px_0_rgba(0,0,0,0.06)]',
-    // min-w keeps the auto-width column readable; narrower screens scroll sideways instead.
-    table: 'w-full table-fixed max-lg:min-w-[1000px]',
+    // Its minimum width is the sum of the column widths (see tableMinWidth).
+    table: 'w-full table-fixed',
     headRow: '',
     th: 'h-12 border-b bg-surface-subtle px-4 text-center text-base font-medium text-ink',
     row: '',
@@ -35,19 +36,25 @@ const VARIANTS = {
 
 const HIGHLIGHT_BG = 'bg-[#FFF7F7]'
 
+/**
+ * A fixed-layout table ignores its content, so its minimum width comes from the columns: each
+ * one's `width`, or `minWidth` for the flexible column. Below that the table scrolls sideways.
+ */
+function tableMinWidth(columns) {
+  const widths = columns.map((col) => col.width ?? col.minWidth).filter(Boolean)
+  return widths.length ? `calc(${widths.join(' + ')})` : undefined
+}
+
 const cellClass = (col, row) =>
   typeof col.cellClassName === 'function' ? col.cellClassName(row) : col.cellClassName
 
-function headerText(column) {
-  return column.cardLabel ?? (typeof column.header === 'string' ? column.header : column.key)
-}
-
 /**
  * A data table with loading skeletons, an error row (with "Try again" when `onRetry` is given),
- * an empty row, and stacked cards below the `md` breakpoint.
+ * and an empty row. On screens narrower than the table it scrolls sideways, keeping the desktop layout.
  *
- * columns: [{ key, header, render(row, index), width?, sortIndicator?, cellClassName?,
- *             cardLabel? (null = no label on the phone card, e.g. an action button) }]
+ * columns: [{ key, header, render(row, index), width?, minWidth?, sortIndicator?, cellClassName? }]
+ * - `width` fixes a column; `minWidth` is the narrowest the flexible (width-less) column may get.
+ *   Fixed widths keep the columns still while rows come and go (filtering, paging).
  * - `cellClassName` replaces the variant's default cell typography/padding for that column;
  *   it may be a function of the row. `cellClassName` on the table sets the default for every column.
  * - grid only: `isHighlighted(row)` paints a row with the red high-impact style.
@@ -109,17 +116,15 @@ export default function DataTable({
 
   return (
     <div className={styles.container}>
-      {/* Desktop and tablet: the table (scrolls sideways if the screen is too narrow) */}
-      <div className="hidden overflow-x-auto md:block lg:overflow-visible">
-        <table className={styles.table}>
+      {/* Scrolls sideways when the screen is narrower than the table */}
+      <div className="overflow-x-auto">
+        <table className={styles.table} style={{ minWidth: tableMinWidth(columns) }}>
           {loading && loadingLabel && <caption className="sr-only">{loadingLabel}</caption>}
-          {isGrid && (
-            <colgroup>
-              {columns.map((col) => (
-                <col key={col.key} style={col.width ? { width: col.width } : undefined} />
-              ))}
-            </colgroup>
-          )}
+          <colgroup>
+            {columns.map((col) => (
+              <col key={col.key} style={col.width ? { width: col.width } : undefined} />
+            ))}
+          </colgroup>
           <thead>
             <tr className={styles.headRow}>
               {columns.map((col) => (
@@ -188,49 +193,6 @@ export default function DataTable({
           </tbody>
         </table>
       </div>
-
-      {/* Phones: one card per row */}
-      <ul
-        className={`divide-y divide-gray-100 md:hidden ${refreshing ? 'opacity-60 transition-opacity' : ''}`}
-        aria-busy={loading || undefined}
-      >
-        {firstLoad &&
-          Array.from({ length: 3 }, (_, i) => (
-            <li key={`skeleton-${i}`} className="flex flex-col gap-3 p-4">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-2/3" />
-            </li>
-          ))}
-        {!loading && error && <li className="p-4 text-center">{errorContent}</li>}
-        {showRows && !loading && rows.length === 0 && (
-          <li className="p-6 text-center text-sm text-muted">{emptyMessage}</li>
-        )}
-        {showRows &&
-          rows.map((row, index) => (
-            <li
-              key={rowKey(row)}
-              className={`flex flex-col gap-2 p-4 ${isGrid && isHighlighted(row) ? HIGHLIGHT_BG : ''}`}
-            >
-              {columns.map((col) =>
-                col.cardLabel === null ? (
-                  <div key={col.key} className="pt-1">
-                    {col.render(row, index)}
-                  </div>
-                ) : (
-                  <div key={col.key} className="flex items-start justify-between gap-4">
-                    <span className="shrink-0 text-xs font-semibold text-muted">
-                      {headerText(col)}
-                    </span>
-                    <div className="min-w-0 text-right text-sm text-ink">
-                      {col.render(row, index)}
-                    </div>
-                  </div>
-                )
-              )}
-            </li>
-          ))}
-      </ul>
 
       {footer}
     </div>

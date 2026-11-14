@@ -14,6 +14,7 @@ import DocImage from '../features/verification/DocImage'
 import ActionModal from '../features/verification/ActionModal'
 import ApproveRejectButtons from '../features/verification/ApproveRejectButtons'
 import { DOC_TYPE_LABELS, DOC_TYPE_TO_STEP } from '../features/verification/documentTypes'
+import { VERIFICATION_STATUS } from '../features/verification/verificationStatus'
 import { COMMON_TEXT, VERIFICATION_TEXT } from '../texts'
 
 const TEXT = VERIFICATION_TEXT.details
@@ -26,12 +27,15 @@ export default function VerificationDetails() {
     loading,
     error,
     reload: reloadDocuments,
+    update: updateDocuments,
   } = useApiResource(ENDPOINTS.contractorDocuments(contractorId), {
     errorMessage: TEXT.loadError,
     networkErrorMessage: COMMON_TEXT.networkError,
   })
   const documents = data ?? []
-  const [selectedDoc, setSelectedDoc] = useState(null)
+  // The selection is an id, so it follows the document through status updates and refreshes.
+  const [selectedDocId, setSelectedDocId] = useState(null)
+  const selectedDoc = documents.find((doc) => doc.documentId === selectedDocId) ?? null
   const [actionLoading, setActionLoading] = useState(false)
   const [modal, setModal] = useState({ open: false, action: null })
 
@@ -65,7 +69,15 @@ export default function VerificationDetails() {
 
       if (res.success) {
         setModal({ open: false, action: null })
-        setSelectedDoc(null)
+        // Show the decision on this document straight away; the viewer and selection stay put.
+        const decidedId = selectedDoc.documentId
+        const status = isApprove ? VERIFICATION_STATUS.APPROVED : VERIFICATION_STATUS.REJECTED
+        updateDocuments((docs) =>
+          docs.map((doc) =>
+            doc.documentId === decidedId ? { ...doc, verificationStatus: status } : doc
+          )
+        )
+        // Then refresh quietly (no skeleton) to pick up server fields such as "Reviewed by".
         reloadDocuments()
       } else {
         alert(res.message || TEXT.actionFailed(modal.action))
@@ -101,7 +113,8 @@ export default function VerificationDetails() {
     )
   }
 
-  if (error) {
+  // A failed background refresh (after a decision) keeps the documents on screen.
+  if (error && !data) {
     return <ErrorState message={error} />
   }
 
@@ -137,11 +150,11 @@ export default function VerificationDetails() {
             <h2 className="mb-4 text-lg font-bold text-heading">{TEXT.documentsTitle}</h2>
             <div className="flex flex-col gap-2">
               {documents.map((doc) => {
-                const isSelected = selectedDoc?.documentId === doc.documentId
+                const isSelected = selectedDocId === doc.documentId
                 return (
                   <button
                     key={doc.documentId}
-                    onClick={() => setSelectedDoc(doc)}
+                    onClick={() => setSelectedDocId(doc.documentId)}
                     className={`flex w-full items-center justify-between rounded-xl border p-4 text-left transition-colors ${
                       isSelected
                         ? 'border-primary bg-white'
