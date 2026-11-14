@@ -1,10 +1,11 @@
-import { BASE_URL } from '../config/api'
+import { authHeaders, BASE_URL } from '../config/api'
+import { ENDPOINTS } from '../config/endpoints'
 
 const PDF_MIME_TYPE = 'application/pdf'
 
 /** The protected file endpoint for a document's storage key ("uploads/pro-documents/x.png"). */
 export function getDocumentFileUrl(fileUrl) {
-  return `${BASE_URL}/api/files/${fileUrl.replace('uploads/', '')}`
+  return `${BASE_URL}${ENDPOINTS.file(fileUrl)}`
 }
 
 export function isPdfDocument(mimeType) {
@@ -25,7 +26,7 @@ export function isPdfDocument(mimeType) {
  */
 export async function loadDocumentFile(fileUrl, mimeType, signal) {
   const res = await fetch(getDocumentFileUrl(fileUrl), {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: authHeaders(),
     signal,
   })
   if (!res.ok) throw new Error(`File request failed (${res.status})`)

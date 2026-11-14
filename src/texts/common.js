@@ -1,0 +1,39 @@
+// Words shared by two or more screens.
+
+export const COMMON_TEXT = {
+  // Brand
+  brandName: 'Rushr',
+
+  // Buttons
+  back: 'Back',
+  cancel: 'Cancel',
+  filter: 'Filter',
+  // The Filter button with how many filters are on: "Filter (2)".
+  filterWithCount: (count) => (count > 0 ? `Filter (${count})` : 'Filter'),
+  review: 'Review',
+  tryAgain: 'Try again',
+  clearAll: 'Clear all',
+
+  // Search box (default placeholder)
+  search: 'Search',
+
+  // Table column headings
+  action: 'Action',
+  reason: 'Reason',
+
+  // Pagination
+  perPage: 'Per page',
+  prev: 'Prev',
+  next: 'Next',
+  pageOf: (page, total) => `Page ${page} of ${total}`,
+
+  // Form marks
+  requiredMark: '*',
+
+  // States and fallbacks
+  comingSoon: 'Coming Soon',
+  noResults: 'No results found.',
+  networkError: 'Unable to connect to server.',
+  emptyValue: '—',
+  today: (time) => `Today, ${time}`,
+}

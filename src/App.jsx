@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Fragment } from 'react'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import SignIn from './pages/SignIn'
 import AdminLayout from './layouts/AdminLayout'
 import ProVerification from './pages/ProVerification'
@@ -7,19 +8,34 @@ import PlatformSettings from './pages/PlatformSettings'
 import DisputeResolution from './pages/DisputeResolution'
 import DisputeDetails from './pages/DisputeDetails'
 import AuditLog from './pages/AuditLog'
+import ComingSoon from './pages/ComingSoon'
 import { useDocumentTitle } from './hooks/useDocumentTitle'
+import { clearSession, isLoggedIn } from './lib/session'
+import { ROUTES } from './config/routes'
+import { NAVIGATION_TEXT } from './texts'
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token')
-  if (!token) return <Navigate to="/login" replace />
+  // The build renders each page once, without a browser session, for the start-up skeletons
+  // (see src/boot); the real check runs in the browser.
+  if (!import.meta.env.SSR && !isLoggedIn()) {
+    // Drop an expired token so it is not sent with the next sign-in.
+    clearSession()
+    return <Navigate to={ROUTES.login} replace />
+  }
   return children
+}
+
+/** Remounts the page when the route param changes, so no state carries over to the next record. */
+function KeyedByParam({ param, children }) {
+  const params = useParams()
+  return <Fragment key={params[param]}>{children}</Fragment>
 }
 
 function App() {
   useDocumentTitle()
   return (
     <Routes>
-      <Route path="/login" element={<SignIn />} />
+      <Route path={ROUTES.login} element={<SignIn />} />
       <Route
         element={
           <ProtectedRoute>
@@ -27,17 +43,37 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<div className="font-montserrat text-2xl font-bold text-gray-400">Dashboard - Coming Soon</div>} />
-        <Route path="/pro-verification" element={<ProVerification />} />
-        <Route path="/pro-verification/:contractorId" element={<VerificationDetails />} />
-        <Route path="/dispute-resolution" element={<DisputeResolution />} />
-        <Route path="/dispute-resolution/:id" element={<DisputeDetails />} />
-        <Route path="/user-management" element={<div className="font-montserrat text-2xl font-bold text-gray-400">User Management - Coming Soon</div>} />
-        <Route path="/platform-settings" element={<PlatformSettings />} />
-        <Route path="/audit-log" element={<AuditLog />} />
-        <Route path="/home" element={<Navigate to="/pro-verification" replace />} />
+        <Route
+          path={ROUTES.dashboard}
+          element={<ComingSoon text={NAVIGATION_TEXT.dashboardComingSoon} />}
+        />
+        <Route path={ROUTES.proVerification} element={<ProVerification />} />
+        <Route
+          path={ROUTES.verificationDetails}
+          element={
+            <KeyedByParam param="contractorId">
+              <VerificationDetails />
+            </KeyedByParam>
+          }
+        />
+        <Route path={ROUTES.disputeResolution} element={<DisputeResolution />} />
+        <Route
+          path={ROUTES.disputeDetails}
+          element={
+            <KeyedByParam param="id">
+              <DisputeDetails />
+            </KeyedByParam>
+          }
+        />
+        <Route
+          path={ROUTES.userManagement}
+          element={<ComingSoon text={NAVIGATION_TEXT.userManagementComingSoon} />}
+        />
+        <Route path={ROUTES.platformSettings} element={<PlatformSettings />} />
+        <Route path={ROUTES.auditLog} element={<AuditLog />} />
+        <Route path={ROUTES.home} element={<Navigate to={ROUTES.proVerification} replace />} />
       </Route>
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to={ROUTES.login} replace />} />
     </Routes>
   )
 }

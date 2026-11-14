@@ -1,25 +1,20 @@
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { matchPath, useLocation } from 'react-router-dom'
+import { ROUTE_TITLES } from '../config/routes'
+import { NAVIGATION_TEXT } from '../texts'
 
-const ROUTE_TITLES = [
-  { match: /^\/login$/, title: 'Sign In' },
-  { match: /^\/dashboard$/, title: 'Dashboard' },
-  { match: /^\/pro-verification$/, title: 'Pro Verification' },
-  { match: /^\/pro-verification\/[^/]+$/, title: 'Verification Details' },
-  { match: /^\/dispute-resolution$/, title: 'Dispute Resolution' },
-  { match: /^\/dispute-resolution\/[^/]+$/, title: 'Dispute Details' },
-  { match: /^\/user-management$/, title: 'User Management' },
-  { match: /^\/platform-settings$/, title: 'Platform Settings' },
-  { match: /^\/audit-log$/, title: 'Audit Log' },
-]
+const BASE_TITLE = NAVIGATION_TEXT.baseTitle
 
-const BASE_TITLE = 'Rushr Admin'
+/** "<Page> | Rushr Admin" for the current route, or just "Rushr Admin". */
+export function titleFor(pathname) {
+  const pattern = Object.keys(ROUTE_TITLES).find((p) => matchPath(p, pathname))
+  return pattern ? `${ROUTE_TITLES[pattern]} | ${BASE_TITLE}` : BASE_TITLE
+}
 
 export function useDocumentTitle() {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    const entry = ROUTE_TITLES.find((r) => r.match.test(pathname))
-    document.title = entry ? `${entry.title} | ${BASE_TITLE}` : BASE_TITLE
+    document.title = titleFor(pathname)
   }, [pathname])
 }

@@ -1,28 +1,44 @@
 import { Bell, Menu } from 'lucide-react'
 import logo from '../assets/logo.png'
+import { getUser } from '../lib/session'
+import { COMMON_TEXT, NAVIGATION_TEXT } from '../texts'
+import { ADMIN_NAV_ID } from './Sidebar'
 
-export default function TopBar() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  const initials = `${(user.firstName || 'A')[0]}${(user.lastName || 'K')[0]}`.toUpperCase()
+/** Initials for the avatar; falls back to the original "AK" placeholder. */
+export function getInitials({ firstName, lastName }) {
+  return `${(firstName || 'A')[0]}${(lastName || 'K')[0]}`.toUpperCase()
+}
+
+export default function TopBar({ navOpen, onMenuClick, menuButtonRef }) {
+  const initials = getInitials(getUser())
 
   return (
-    <header
-      className="w-full flex items-center gap-4 bg-white border-b border-gray-100"
-      style={{ height: '80px', padding: '12px 80px' }}
-    >
-      <button className="lg:hidden">
-        <Menu className="w-6 h-6 text-gray-400" />
+    <header className="flex h-20 w-full shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 py-3 sm:gap-4 sm:px-8 lg:px-20">
+      <button
+        ref={menuButtonRef}
+        type="button"
+        onClick={onMenuClick}
+        aria-label={NAVIGATION_TEXT.openMenu}
+        aria-expanded={navOpen}
+        aria-controls={ADMIN_NAV_ID}
+        className="lg:hidden"
+      >
+        <Menu className="h-6 w-6 text-gray-400" aria-hidden="true" />
       </button>
 
-      <img src={logo} alt="Rushr" className="w-[80px] h-[80px] object-contain" />
+      <img
+        src={logo}
+        alt={COMMON_TEXT.brandName}
+        className="h-14 w-14 object-contain sm:h-[80px] sm:w-[80px]"
+      />
 
       <div className="flex-1" />
 
       {/* Notification */}
-      <div className="relative w-14 h-14 flex items-center justify-center rounded-full hover:bg-gray-50 cursor-pointer">
-        <Bell className="w-6 h-6 text-[#6A6A6A]" />
+      <div className="relative flex h-14 w-14 cursor-pointer items-center justify-center rounded-full hover:bg-gray-50">
+        <Bell className="h-6 w-6 text-muted" />
         <span
-          className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center rounded-md text-xs font-montserrat"
+          className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-md text-xs"
           style={{ backgroundColor: '#FFFBF3', color: '#D97706', fontSize: '12px' }}
         >
           4
@@ -31,8 +47,10 @@ export default function TopBar() {
 
       {/* Profile */}
       <div
-        className="w-14 h-14 rounded-full flex items-center justify-center text-white font-montserrat font-semibold"
+        className="flex h-14 w-14 items-center justify-center rounded-full font-semibold text-white"
         style={{ backgroundColor: '#0067DE', fontSize: '24px' }}
+        // The start-up skeleton script (build/bootSkeletons.js) blanks this until React fills it.
+        data-initials
       >
         {initials}
       </div>
