@@ -2,9 +2,8 @@ import { useState, useMemo } from 'react'
 import { SlidersHorizontal, Circle } from 'lucide-react'
 import { AUDIT_LOGS, AUDIT_MODULES } from '../data/auditLogs'
 import DataTable from '../components/ui/DataTable'
-import FilterMenu, { FilterLabel } from '../components/ui/FilterMenu'
+import FilterMenu, { FilterLabel, multiSelectOptions } from '../components/ui/FilterMenu'
 import Button from '../components/ui/Button'
-import { toggleItem } from '../utils/list'
 import PageHeader from '../components/ui/PageHeader'
 import Pagination from '../components/ui/Pagination'
 import { useClientPagination } from '../hooks/useClientPagination'
@@ -20,20 +19,26 @@ const HIGH_IMPACT_BG = '#FFF7F7'
 const HIGH_IMPACT_BORDER = '#C20A0A'
 
 const COLUMNS = [
-  { key: 'timestamp', header: TEXT.columns.timestamp, width: '153px' },
-  { key: 'actor', header: TEXT.columns.actor, width: '164px' },
-  { key: 'module', header: TEXT.columns.module, width: '198px' },
+  {
+    key: 'timestamp',
+    width: '14.6%',
+    minWidth: '120px',
+    header: TEXT.columns.timestamp,
+  },
+  { key: 'actor', width: '15.7%', minWidth: '120px', header: TEXT.columns.actor },
+  { key: 'module', width: '18.9%', minWidth: '140px', header: TEXT.columns.module },
   {
     key: 'action',
+    minWidth: '150px',
     header: TEXT.columns.action,
-    minWidth: '180px',
     cellClassName: (log) =>
       `px-4 text-center text-[14px] font-medium leading-[1.4] ${log.highImpact ? 'text-danger' : 'text-ink'}`,
   },
   {
     key: 'reason',
+    width: '29.8%',
+    minWidth: '220px',
     header: COMMON_TEXT.reason,
-    width: '311px',
     cellClassName: 'px-4 py-2 text-center text-[12px] font-medium leading-[1.4] text-ink',
   },
 ]
@@ -68,11 +73,6 @@ export default function AuditLog() {
   const { page, totalPages, perPage, pageItems, setPage, setPerPage, resetPage } =
     useClientPagination(filtered, 10)
   const activeFilterCount = moduleFilter.length + (highImpactOnly ? 1 : 0)
-
-  function toggleModule(name) {
-    setModuleFilter((prev) => toggleItem(prev, name))
-    resetPage()
-  }
 
   function clearFilters() {
     setModuleFilter([])
@@ -118,12 +118,10 @@ export default function AuditLog() {
                 {
                   heading: TEXT.moduleHeading,
                   options: [
-                    ...AUDIT_MODULES.map((name) => ({
-                      key: name,
-                      label: name,
-                      checked: moduleFilter.includes(name),
-                      onToggle: () => toggleModule(name),
-                    })),
+                    ...multiSelectOptions(AUDIT_MODULES, moduleFilter, (update) => {
+                      setModuleFilter(update)
+                      resetPage()
+                    }),
                     {
                       key: 'high-impact',
                       label: TEXT.highImpactOnly,

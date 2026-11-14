@@ -13,8 +13,7 @@ import SearchInput from '../components/ui/SearchInput'
 import CategoryDialog from '../features/categories/CategoryDialog'
 import DeleteCategoryDialog from '../features/categories/DeleteCategoryDialog'
 import EditIcon from '../features/categories/EditIcon'
-import FilterMenu, { FilterLabel } from '../components/ui/FilterMenu'
-import { toggleItem } from '../utils/list'
+import FilterMenu, { FilterLabel, multiSelectOptions } from '../components/ui/FilterMenu'
 import {
   NO_ISSUE_TYPES,
   UPDATED_WITHIN_DAYS,
@@ -118,15 +117,12 @@ export default function PlatformSettings() {
   const filterSections = [
     {
       heading: TEXT.filter.issueTypesHeading,
-      options: [
-        ...issueTypeOptions((categories ?? []).filter((cat) => cat.active)),
-        NO_ISSUE_TYPES,
-      ].map((type) => ({
-        key: type,
-        label: type === NO_ISSUE_TYPES ? TEXT.filter.noIssueTypes : type,
-        checked: issueTypeFilter.includes(type),
-        onToggle: () => setIssueTypeFilter((prev) => toggleItem(prev, type)),
-      })),
+      options: multiSelectOptions(
+        [...issueTypeOptions(categories ?? []), NO_ISSUE_TYPES],
+        issueTypeFilter,
+        setIssueTypeFilter,
+        (type) => (type === NO_ISSUE_TYPES ? TEXT.filter.noIssueTypes : type)
+      ),
     },
     {
       heading: TEXT.filter.updatedHeading,
@@ -149,7 +145,7 @@ export default function PlatformSettings() {
   const columns = [
     {
       key: 'name',
-      minWidth: '200px',
+      minWidth: '160px',
       header: TEXT.nameColumn,
       sortIndicator: true,
       cellClassName: 'text-sm text-heading',
@@ -157,7 +153,8 @@ export default function PlatformSettings() {
     },
     {
       key: 'issueTypes',
-      width: '382px',
+      width: '40%',
+      minWidth: '240px',
       header: TEXT.issueTypesColumn,
       sortIndicator: true,
       cellClassName: 'text-sm text-muted',
@@ -166,14 +163,16 @@ export default function PlatformSettings() {
     },
     {
       key: 'updated',
-      width: '160px',
+      width: '16%',
+      minWidth: '120px',
       header: TEXT.lastUpdateColumn,
       cellClassName: 'text-sm text-muted',
       render: (cat) => formatDate(cat.updatedAt),
     },
     {
       key: 'actions',
-      width: '200px',
+      width: '20%',
+      minWidth: '180px',
       header: TEXT.actionsColumn,
       render: (cat) => (
         <div className="flex items-center gap-5">

@@ -44,37 +44,47 @@ export default function DisputeResolution() {
   const currentPage = Math.min(page, totalPages)
 
   const columns = [
-    { key: 'caseId', header: TEXT.columns.disputeId, width: '120px', render: (d) => d.caseId },
+    {
+      key: 'caseId',
+      width: '11.3%',
+      minWidth: '90px',
+      header: TEXT.columns.disputeId,
+      render: (d) => d.caseId,
+    },
     {
       key: 'customer',
+      width: '14.2%',
+      minWidth: '110px',
       header: TEXT.columns.customerName,
-      width: '150px',
       render: (d) => d.consumerName,
     },
     {
       key: 'pro',
+      width: '14.2%',
+      minWidth: '110px',
       header: TEXT.columns.proName,
-      width: '150px',
       // Null when a dispute was raised before any pro was assigned.
       render: (d) => d.contractorName || COMMON_TEXT.emptyValue,
     },
     {
       key: 'service',
+      width: '14.2%',
+      minWidth: '110px',
       header: TEXT.columns.service,
-      width: '150px',
       render: (d) => d.categoryName || COMMON_TEXT.emptyValue,
     },
     {
       key: 'reason',
+      minWidth: '140px',
       header: COMMON_TEXT.reason,
-      minWidth: '180px',
       cellClassName: 'p-2 text-[12px] font-semibold leading-normal text-ink',
       render: (d) => d.reason,
     },
     {
       key: 'status',
+      width: '14.2%',
+      minWidth: '120px',
       header: TEXT.columns.status,
-      width: '150px',
       cellClassName: 'px-4 text-center',
       render: (d) => (
         <div className="flex items-center justify-center">
@@ -84,8 +94,9 @@ export default function DisputeResolution() {
     },
     {
       key: 'action',
+      width: '12.3%',
+      minWidth: '100px',
       header: COMMON_TEXT.action,
-      width: '130px',
       cellClassName: 'px-4 text-center',
       render: (d) => (
         <button

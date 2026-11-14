@@ -13,8 +13,12 @@ const CATEGORIES = [
 const ids = (list) => list.map((c) => c.id)
 
 describe('issueTypeOptions', () => {
-  it('lists every issue type once, sorted', () => {
-    expect(issueTypeOptions(CATEGORIES)).toEqual(['Clog', 'Leak', 'Outage'])
+  it('lists every issue type of the active categories once, sorted', () => {
+    const withInactive = [
+      ...CATEGORIES,
+      { id: 5, name: 'Gone', active: false, issueTypes: ['Mold'] },
+    ]
+    expect(issueTypeOptions(withInactive)).toEqual(['Clog', 'Leak', 'Outage'])
   })
 })
 

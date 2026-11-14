@@ -6,33 +6,48 @@ import { StaticRouter } from 'react-router-dom'
 import App from '../App'
 import { ROUTES } from '../config/routes'
 
-/**
- * - `paths`: the addresses this snapshot is for (route patterns, with :params).
- * - `render`: the route to render, when it is not the first path.
- * - `signedIn`: only for a live session (admin pages).
- * - `fallback`: what a signed-out visitor sees on any other address (the app sends them there).
- */
-const BOOT_PAGES = [
-  { paths: [ROUTES.dashboard], signedIn: true },
-  { paths: [ROUTES.proVerification, ROUTES.home], signedIn: true },
-  { paths: [ROUTES.verificationDetails], signedIn: true },
-  { paths: [ROUTES.disputeResolution], signedIn: true },
-  { paths: [ROUTES.disputeDetails], signedIn: true },
-  { paths: [ROUTES.userManagement], signedIn: true },
-  { paths: [ROUTES.platformSettings], signedIn: true },
-  { paths: [ROUTES.auditLog], signedIn: true },
-  { paths: [ROUTES.login, '/'], fallback: true },
+/** Addresses that only redirect; they show the page they lead to. */
+const REDIRECTS = { [ROUTES.home]: ROUTES.proVerification, [ROUTES.root]: ROUTES.login }
+
+/** Every admin page in ROUTES, so a new page gets its start-up skeleton without an edit here. */
+const ADMIN_PAGES = Object.values(ROUTES).filter(
+  (path) => path !== ROUTES.login && !(path in REDIRECTS)
+)
+
+/** The addresses that show `page`: itself plus any redirect leading to it. */
+const addressesOf = (page) => [
+  page,
+  ...Object.keys(REDIRECTS).filter((from) => REDIRECTS[from] === page),
 ]
 
-/** [{ paths, signedIn, fallback, html }]: `html` is the page as it first renders. */
+/** The route pattern with every :param replaced by `value`. */
+const fillParams = (path, value) => path.replace(/:\w+/g, value)
+
+/** Route patterns as one regex source for the address (after the base path). */
+const routeRegex = (paths) =>
+  `^(${paths.map((path) => fillParams(path, '[^/]+').replace(/\/$/, '')).join('|')})/?$`
+
+/** A concrete address for a route pattern, for rendering it. */
+const sampleAddress = (path) => fillParams(path, '0')
+
+/**
+ * One snapshot per page: `route` (regex source for the addresses it covers), `signedIn` (admin
+ * pages: only with a live session), `fallback` (sign-in: what a signed-out visitor sees on any
+ * other address, since the app sends them there) and `html` (the page as it first renders).
+ */
 export function renderBootSkeletons(basename) {
-  return BOOT_PAGES.map((page) => {
-    const location = basename + page.paths[0].replace(/:\w+/g, '0').slice(1)
-    const html = renderToStaticMarkup(
-      <StaticRouter basename={basename} location={location}>
+  const pages = [
+    ...ADMIN_PAGES.map((page) => ({ page, signedIn: true, fallback: false })),
+    { page: ROUTES.login, signedIn: false, fallback: true },
+  ]
+  return pages.map(({ page, signedIn, fallback }) => ({
+    route: routeRegex(addressesOf(page)),
+    signedIn,
+    fallback,
+    html: renderToStaticMarkup(
+      <StaticRouter basename={basename} location={basename + sampleAddress(page).slice(1)}>
         <App />
       </StaticRouter>
-    )
-    return { ...page, html }
-  })
+    ),
+  }))
 }

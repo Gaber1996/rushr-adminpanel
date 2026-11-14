@@ -31,7 +31,11 @@ export function tokenExpiry(token) {
   }
 }
 
-/** True for a token that exists and, if it carries an expiry, has not reached it yet. */
+/**
+ * True for a token that exists and, if it carries an expiry, has not reached it yet.
+ * `expiryOf` is tokenExpiry, passed in rather than called directly so this function still works
+ * when the start-up script runs a copy of it on its own.
+ */
 export function isTokenLive(token, now, expiryOf) {
   if (!token) return false
   const expiry = expiryOf(token)

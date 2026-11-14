@@ -4,6 +4,7 @@ import { NAVIGATION_TEXT } from '../texts'
 // Every in-app path lives here. Pages navigate with these helpers instead of writing URLs by hand.
 
 export const ROUTES = {
+  root: '/',
   login: '/login',
   home: '/home',
   dashboard: '/dashboard',

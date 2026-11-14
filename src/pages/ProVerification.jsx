@@ -8,14 +8,13 @@ import { formatDate } from '../utils/format'
 import Button from '../components/ui/Button'
 import DataTable from '../components/ui/DataTable'
 import ErrorState from '../components/ui/ErrorState'
-import FilterMenu, { FilterLabel } from '../components/ui/FilterMenu'
+import FilterMenu, { FilterLabel, multiSelectOptions } from '../components/ui/FilterMenu'
 import { PaginationPlaceholder } from '../components/ui/Pagination'
 import PageHeader from '../components/ui/PageHeader'
 import SearchInput from '../components/ui/SearchInput'
 import VerificationStatusBadge from '../features/verification/VerificationStatusBadge'
 import { VERIFICATION_STATUS, stepStatus } from '../features/verification/verificationStatus'
 import { matchesSearch } from '../utils/search'
-import { toggleItem } from '../utils/list'
 import { DOC_TYPE_TO_STEP } from '../features/verification/documentTypes'
 import { COMMON_TEXT, VERIFICATION_TEXT } from '../texts'
 
@@ -59,7 +58,7 @@ export default function ProVerification() {
   const columns = [
     {
       key: 'name',
-      minWidth: '200px',
+      minWidth: '160px',
       header: TEXT.nameColumn,
       sortIndicator: true,
       cellClassName: 'text-sm text-heading',
@@ -67,35 +66,40 @@ export default function ProVerification() {
     },
     {
       key: 'govId',
-      width: '168px',
+      width: '16%',
+      minWidth: '140px',
       header: DOC_TYPES.governmentId,
       sortIndicator: true,
       render: stepBadge(DOC_TYPE_TO_STEP.GOVERNMENT_ID),
     },
     {
       key: 'license',
-      width: '204px',
+      width: '19.5%',
+      minWidth: '170px',
       header: DOC_TYPES.license,
       sortIndicator: true,
       render: stepBadge(DOC_TYPE_TO_STEP.LICENSE),
     },
     {
       key: 'insurance',
-      width: '196px',
+      width: '19%',
+      minWidth: '170px',
       header: DOC_TYPES.insurance,
       sortIndicator: true,
       render: stepBadge(DOC_TYPE_TO_STEP.INSURANCE),
     },
     {
       key: 'submitted',
-      width: '120px',
+      width: '11%',
+      minWidth: '110px',
       header: TEXT.submittedColumn,
       cellClassName: 'text-sm text-muted',
       render: (item) => formatDate(item.submittedAt),
     },
     {
       key: 'action',
-      width: '110px',
+      width: '10%',
+      minWidth: '90px',
       header: COMMON_TEXT.action,
       sortIndicator: true,
       render: (item) => (
@@ -133,12 +137,12 @@ export default function ProVerification() {
           sections={[
             {
               heading: TEXT.filterHeading,
-              options: FILTER_STATUSES.map((status) => ({
-                key: status,
-                label: TEXT.filterStatus[status],
-                checked: statusFilter.includes(status),
-                onToggle: () => setStatusFilter((prev) => toggleItem(prev, status)),
-              })),
+              options: multiSelectOptions(
+                FILTER_STATUSES,
+                statusFilter,
+                setStatusFilter,
+                (status) => TEXT.filterStatus[status]
+              ),
             },
           ]}
           onClear={() => setStatusFilter([])}

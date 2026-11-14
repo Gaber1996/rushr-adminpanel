@@ -10,9 +10,10 @@ export const UPDATED_WITHIN_DAYS = [7, 30]
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-/** Every issue type used by the categories, sorted, without repeats. */
+/** Every issue type used by the active categories (the ones listed), sorted, without repeats. */
 export function issueTypeOptions(categories) {
-  const types = new Set(categories.flatMap((cat) => cat.issueTypes ?? []))
+  const listed = categories.filter((cat) => cat.active)
+  const types = new Set(listed.flatMap((cat) => cat.issueTypes ?? []))
   return [...types].sort((a, b) => a.localeCompare(b))
 }
 

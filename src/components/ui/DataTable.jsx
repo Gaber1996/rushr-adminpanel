@@ -37,11 +37,11 @@ const VARIANTS = {
 const HIGHLIGHT_BG = 'bg-[#FFF7F7]'
 
 /**
- * A fixed-layout table ignores its content, so its minimum width comes from the columns: each
- * one's `width`, or `minWidth` for the flexible column. Below that the table scrolls sideways.
+ * A fixed-layout table ignores its content, so the table can't get narrower than the columns'
+ * `minWidth`s added up. Below that it scrolls sideways.
  */
 function tableMinWidth(columns) {
-  const widths = columns.map((col) => col.width ?? col.minWidth).filter(Boolean)
+  const widths = columns.map((col) => col.minWidth).filter(Boolean)
   return widths.length ? `calc(${widths.join(' + ')})` : undefined
 }
 
@@ -53,8 +53,10 @@ const cellClass = (col, row) =>
  * and an empty row. On screens narrower than the table it scrolls sideways, keeping the desktop layout.
  *
  * columns: [{ key, header, render(row, index), width?, minWidth?, sortIndicator?, cellClassName? }]
- * - `width` fixes a column; `minWidth` is the narrowest the flexible (width-less) column may get.
- *   Fixed widths keep the columns still while rows come and go (filtering, paging).
+ * - `width` is the column's share of the table (e.g. '16%'); one column may leave it out and take
+ *   what is left. `minWidth` (px) is the narrowest a column may get; together they set the
+ *   table's minimum width. Set widths keep the columns still while rows come and go (filtering)
+ *   and let the table fill any desktop width.
  * - `cellClassName` replaces the variant's default cell typography/padding for that column;
  *   it may be a function of the row. `cellClassName` on the table sets the default for every column.
  * - grid only: `isHighlighted(row)` paints a row with the red high-impact style.

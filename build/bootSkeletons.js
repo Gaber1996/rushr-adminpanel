@@ -35,10 +35,6 @@ function showBootSkeleton(config, isTokenLive, tokenExpiry) {
   }
 }
 
-/** "^(/pro-verification/[^/]+)/?$" for ["/pro-verification/:contractorId"]. */
-const routeRegex = (paths) =>
-  `^(${paths.map((p) => p.replace(/:\w+/g, '[^/]+').replace(/\/$/, '')).join('|')})/?$`
-
 /**
  * Start-up skeletons: while the app's JavaScript downloads, the page would be blank. At build
  * time this renders the real app at each page (src/boot/renderBootSkeletons.jsx), where every
@@ -84,11 +80,10 @@ export function bootSkeletons() {
         )
 
       const templates = pages
-        .map(({ paths, signedIn, fallback, html: page }) => {
+        .map(({ route, signedIn, fallback, html: page }) => {
           const flags = [signedIn && 'data-boot-signed-in', fallback && 'data-boot-fallback']
             .filter(Boolean)
             .join(' ')
-          const route = routeRegex(paths)
           return `<template data-boot-route="${route}" ${flags}>${withBuiltAssets(page)}</template>`
         })
         .join('\n')
